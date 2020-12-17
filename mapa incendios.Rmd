@@ -1,0 +1,111 @@
+---
+title: "Incendios"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(data.table)
+library(readxl)
+options(scipen = 99)
+
+setwd("c:/Documents and Settings/Leandro/Mis documentos/Eant/incendios/")
+```
+
+```{r}
+#Limpieza de datos
+
+cant_incendios <- read_xlsx("cantidad.xlsx")
+
+
+cant_incendios[cant_incendios == "s/i"] <- NA #Elimino los s/i pasandolos como NA
+
+cant_incendios[, c(2:26)] <- sapply(cant_incendios[, c(2:26)], as.numeric) # Convierto las columnas de años a numeric ya que varias eran character
+
+cant_incendios <- cant_incendios %>%  #uno las columnas con gather para agrupar la data en tidy format
+  gather(key = "anio",
+         value = "cant_incendios",
+         c(2:26))
+
+cant_incendios <- cant_incendios %>% #renombro la variable juridisccion
+  rename(jursidiccion = Jurisdicción)
+
+cant_incendios <- cant_incendios %>%  #filtro la categoria TOTAL
+  filter(jursidiccion !="TOTAL")
+
+cant_incendios$jursidiccion <- tolower(cant_incendios$jursidiccion) #paso todo a minúscula
+cant_incendios$jursidiccion <- gsub(cant_incendios$jursidiccion , pattern = " ", replacement = "_") #reemplazo espacios por _
+```
+
+
+```{r}
+ha_incendios <- read_xlsx("ha.xlsx")
+
+ha_incendios[ha_incendios == "s/i"] <- NA #Elimino los s/i pasandolos como NA
+
+ha_incendios[, c(2:26)] <- sapply(ha_incendios[, c(2:26)], as.numeric) # Convierto las columnas de años a numeric ya que varias eran character
+
+ha_incendios <- ha_incendios %>%  #uno las columnas con gather para agrupar la data en tidy format
+  gather(key = "anio",
+         value = "ha_incendios",
+         c(2:26))
+
+ha_incendios$ha_incendios <- gsub("\\.", ",", ha_incendios$ha_incendios) #Convierto los "." en ","
+
+
+ha_incendios <- ha_incendios %>% #renombro la variable juridisccion
+  rename(jursidiccion = Jurisdicción)
+
+ha_incendios <- ha_incendios %>%  #filtro la categoria TOTAL
+  filter(jursidiccion !="TOTAL")
+
+ha_incendios$jursidiccion <- tolower(ha_incendios$jursidiccion) #paso todo a minúscula
+ha_incendios$jursidiccion <- gsub(ha_incendios$jursidiccion , pattern = " ", replacement = "_") #reemplazo espacios por _
+
+incendios <- cbind(cant_incendios, ha_incendios[, 3]) #juntamos ambas bases, en la de hectareas seleccionamos solo la 3ra columna (hectareas afectadas)
+
+
+```
+
+
+```{r}
+cantidad <- read.csv("http://datos.ambiente.gob.ar/dataset/12f60bea-3225-4375-935c-1fb9ebe3ef57/resource/93c2f293-9698-4457-92cf-e07856d8edb2/download/incendios-cantidad-causas-provincia.csv", sep = ";")
+
+str(cantidad)
+
+cantidad <- cantidad %>%  #uno las columnas con gather para agrupar la data en tidy format
+  gather(key = "incendio_x_tipo",
+         value = "cant_incendios_x_tipo",
+         c(4:7))
+
+cantidad <- cantidad %>% #renombro la variable
+  rename(anio = incendio_anio) %>% 
+  rename(provincia = incendio_provincia)
+
+cantidad$provincia <- tolower(cantidad$provincia) #paso todo a minúscula
+cantidad$provincia <- gsub(cantidad$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
+
+```
+
+```{r}
+superficie <- read.csv("http://datos.ambiente.gob.ar/dataset/12f60bea-3225-4375-935c-1fb9ebe3ef57/resource/c7b70f96-5562-4673-9b61-6ead123a99f7/download/superficie-incendiada-provincias-tipo-de-vegetacion.csv", sep = ";")
+
+str(superficie)
+
+superficie <- superficie %>% 
+  mutate_at(vars(superficie_afectada_por_incendios_arbustal_hectareas, superficie_afectada_por_incendios_total_hectareas),
+         list(numeric))
+
+
+superficie[, 3:8] <- as.data.frame(lapply(superficie[, 3:8], function(y) gsub(pattern = "-", replacement = "0", y))) #aplico gsub a las columnas para pasar los - a 0 y que me quede igual que el dataset anterior
+
+superficie2 <- superficie
+
+superficie$superficie_afectada_por_incendios_total_hectareas <- as.numeric(superficie$superficie_afectada_por_incendios_total_hectareas)
+
+```
+
