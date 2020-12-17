@@ -1,0 +1,116 @@
+---
+title: "scraping"
+author: "elian"
+date: "16/12/2020"
+output: html_document
+---
+Cargamos librerias
+```{r}
+library(httr)
+library(jsonlite)
+library(rvest)
+library(tidyverse)
+library(tm)
+```
+
+Conectamos con la API de Jornalia (https://jornalia.net/) para traer artículos relacionados a los incendios de los principales medios
+```{r}
+apiKey <- "9181f8e92fb8454d9299a2c619803898"
+
+#se trae de a 50 registros, en el periodo del 01/09/2020 al 20/10/2020 de los principales medios nacionales y medios provinciales de Córdoba
+
+path <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454d9299a2c619803898&search=incendios&providers=Clarin%2CTN%2CPagina12%2CLaNacion%2CTelam%2CInfobae%2CLaVozCB%2CCadena3CB%2CLaTinta&categories=LOCALES%2CNACIONALES%2CSOCIEDAD%2CPOLITICA%2CECONOMIA&startDate=2020-09-01&endDate=2020-09-23")
+
+path2 <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454d9299a2c619803898&search=incendios+forestales&providers=Clarin%2CTN%2CPagina12%2CLaNacion%2CTelam%2CInfobae%2CLaVozCB%2CCadena3CB%2CLaTinta&categories=LOCALES%2CNACIONALES%2CSOCIEDAD%2CPOLITICA%2CECONOMIA&startDate=2020-09-24&endDate=2020-09-24")
+
+path3 <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454d9299a2c619803898&search=incendios+forestales&providers=Clarin%2CTN%2CPagina12%2CLaNacion%2CTelam%2CInfobae%2CLaVozCB%2CCadena3CB%2CLaTinta&categories=LOCALES%2CNACIONALES%2CSOCIEDAD%2CPOLITICA%2CECONOMIA&startDate=2020-09-25&endDate=2020-09-28")
+
+path4 <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454d9299a2c619803898&search=incendios+forestales&providers=Clarin%2CTN%2CPagina12%2CLaNacion%2CTelam%2CInfobae%2CLaVozCB%2CCadena3CB%2CLaTinta&categories=LOCALES%2CNACIONALES%2CSOCIEDAD%2CPOLITICA%2CECONOMIA&startDate=2020-09-29&endDate=2020-10-01")
+
+path5 <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454d9299a2c619803898&search=incendios+forestales&providers=Clarin%2CTN%2CPagina12%2CLaNacion%2CTelam%2CInfobae%2CLaVozCB%2CCadena3CB%2CLaTinta&categories=LOCALES%2CNACIONALES%2CSOCIEDAD%2CPOLITICA%2CECONOMIA&startDate=2020-10-02&endDate=2020-10-05")
+
+path6 <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454d9299a2c619803898&search=incendios+forestales&providers=Clarin%2CTN%2CPagina12%2CLaNacion%2CTelam%2CInfobae%2CLaVozCB%2CCadena3CB%2CLaTinta&categories=LOCALES%2CNACIONALES%2CSOCIEDAD%2CPOLITICA%2CECONOMIA&startDate=2020-10-06&endDate=2020-10-07")
+
+path7 <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454d9299a2c619803898&search=incendios+forestales&providers=Clarin%2CTN%2CPagina12%2CLaNacion%2CTelam%2CInfobae%2CLaVozCB%2CCadena3CB%2CLaTinta&categories=LOCALES%2CNACIONALES%2CSOCIEDAD%2CPOLITICA%2CECONOMIA&startDate=2020-10-08&endDate=2020-10-12")
+
+path8 <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454d9299a2c619803898&search=incendios+forestales&providers=Clarin%2CTN%2CPagina12%2CLaNacion%2CTelam%2CInfobae%2CLaVozCB%2CCadena3CB%2CLaTinta&categories=LOCALES%2CNACIONALES%2CSOCIEDAD%2CPOLITICA%2CECONOMIA&startDate=2020-10-13&endDate=2020-10-20")
+
+response <- GET(url = path)
+response2 <- GET(url = path2)
+response3 <- GET(url = path3)
+response4 <- GET(url = path4)
+response5 <- GET(url = path5)
+response6 <- GET(url = path6)
+response7 <- GET(url = path7)
+response8 <- GET(url = path8)
+
+```
+
+Armamos el dataframe
+
+```{r}
+#vemos que trae la conuslta
+str(content(response))
+str(content(response2))
+str(content(response3))
+str(content(response4))
+str(content(response5))
+str(content(response6))
+str(content(response7))
+str(content(response8))
+
+response <- content(response, as = "text", encoding = "UTF-8")
+response2 <- content(response2, as = "text", encoding = "UTF-8")
+response3 <- content(response3, as = "text", encoding = "UTF-8")
+response4 <- content(response4, as = "text", encoding = "UTF-8")
+response5 <- content(response5, as = "text", encoding = "UTF-8")
+response6 <- content(response6, as = "text", encoding = "UTF-8")
+response7 <- content(response7, as = "text", encoding = "UTF-8")
+response8 <- content(response8, as = "text", encoding = "UTF-8")
+
+#lo transformo de JSON a dataframe
+df <- fromJSON(response,flatten = TRUE)
+df2 <- fromJSON(response2,flatten = TRUE)
+df3 <- fromJSON(response3,flatten = TRUE)
+df4 <- fromJSON(response4,flatten = TRUE)
+df5 <- fromJSON(response5,flatten = TRUE)
+df6 <- fromJSON(response6,flatten = TRUE)
+df7 <- fromJSON(response7,flatten = TRUE)
+df8 <- fromJSON(response8,flatten = TRUE)
+
+df <- as.data.frame(df$articles)
+df2 <- as.data.frame(df2$articles)
+df3 <- as.data.frame(df3$articles)
+df4 <- as.data.frame(df4$articles)
+df5 <- as.data.frame(df5$articles)
+df6 <- as.data.frame(df6$articles)
+df7 <- as.data.frame(df7$articles)
+df8 <- as.data.frame(df8$articles)
+
+
+View(df)
+View(df2)
+View(df3)
+View(df4)
+View(df5)
+View(df6)
+View(df7)
+View(df8)
+
+#juntamos los dataframes
+
+data_incendios <- rbind(df,df2,df3,df4,df5,df6,df7,df8)
+
+#trae algunos valores con nulos así que los eliminamos, también limpiamos algunos artículos que a simple vista no están relacionados con el análisis
+
+data_incendios <- data_incendios %>% na.omit()
+
+data_incendios <- filter(data_incendios[-(15:23), ])
+data_incendios <- filter(data_incendios[-(21:23), ])
+data_incendios <- filter(data_incendios[-c(190, 213, 305, 320), ])
+
+View(data_incendios)
+```
+
+
+
