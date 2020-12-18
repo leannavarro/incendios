@@ -125,12 +125,12 @@ data_medios$publishedAt <- as.Date(data_medios$publishedAt , format="%Y-%m-%d")
 
 ```
 
-Ahora vamos a sumar registros del diario La Capital de Rosario, para tener mayor representación de medios provinciales en el dataset y poder nutrir el análisis. Como este medio no está en la API vamos a scrapear los articulos sobre el mismo tema, para las mismas fechas.
+Ahora vamos a sumar registros de medios locales y provinciales de Santa Fe y Córdoba que no se encontrbana en la API, para nutrir el análisis. Scrapeamos articulos sobre el mismo tema, para fechas similares.
 
 ```{r}
 #usamos la librería RSelenium que nos permite navegar por el sitio web y scrapear los datos
-#hasta pag 4 inclusive
 
+#Medio La Capital de Rosario
 url_origen <- "https://www.lacapital.com.ar/incendios-s.html/14"
 
 contador <- 1 #para limitar la cantidad de registros a traer según las páginas
@@ -172,7 +172,97 @@ while(contador < 12){ #traigo las 11 páginas que entran en el período establec
   contador <- contador + 1
 }
 
+#Medio Santa Fe Uno de la provincia
 
+url_santafe <- "https://www.unosantafe.com.ar/incendios-s.html/5"
+
+contador <- 1 #para limitar la cantidad de registros a traer según las páginas
+
+title1 <- c()
+description1 <- c()
+publishedAt1 <- c()
+
+driver<- rsDriver(port= 2235L, chromever = "87.0.4280.88")
+remDr <- driver[["client"]]
+remDr$navigate(url_santafe)
+remDr$open()
+
+
+while(contador < 5){ #traigo las 4 páginas que entran en el período establecido
+  
+  title_click <- driver$client$findElements(using = "css", value = ".article-news-title") #busco los comentarios
+  for(ele in 1:length(title_click)) {
+    title_click[[ele]]$clickElement()
+    
+    Sys.sleep(2)
+    
+    titulo <- driver$client$findElement(using = "css", value = ".news-header-title")
+    title1 <- append(title1, value =titulo$getElementText()) #guardo los comentarios
+    descripcion <- driver$client$findElement(using = "css", value = ".news-header-description")
+    description1 <- append(description1, value = descripcion$getElementText())
+    fecha <- driver$client$findElement(using = "css", value = ".paragraph-date")
+    publishedAt1 <- append(publishedAt1, value = fecha$getElementText())
+    
+    driver$client$goBack()
+    
+    Sys.sleep(2)
+    title_click <- driver$client$findElements(using = "css", value = ".article-news-title")
+  }
+  
+  btn_atras <- driver$client$findElement(using = "css", value = ".prev")
+  btn_atras$clickElement()
+  
+  Sys.sleep(3)
+  contador <- contador + 1
+}
+
+```
+
+```{r}
+#Medio Hoy Día Córdoba
+url_cba <- "https://www.hoydia.com.ar/busqueda.html?searchword=incendios&searchphrase=all&start=20" 
+
+contador <- 1 #para limitar la cantidad de registros a traer según las páginas
+
+title2 <- c()
+description2 <- c()
+publishedAt2 <- c()
+
+driver<- rsDriver(port= 2235L, chromever = "87.0.4280.88")
+remDr <- driver[["client"]]
+remDr$navigate(url_cba)
+remDr$open()
+
+
+
+while(contador < 3){ #traigo las 4 páginas que entran en el período establecido
+  
+  title_click <- driver$client$findElements(using = "css", value = ".result-title a") #busco los comentarios
+  for(ele in 1:length(title_click)) {
+    title_click[[ele]]$clickElement()
+    
+    Sys.sleep(4)
+    
+    titulo <- driver$client$findElement(using = "css", value = "h2")
+    title2 <- append(title2, value =titulo$getElementText()) #guardo los comentarios
+    descripcion <- driver$client$findElement(using = "css", value = ".article-intro p")
+    description2 <- append(description2, value = descripcion$getElementText())
+    fecha <- driver$client$findElement(using = "css", value = "time")
+    publishedAt2 <- append(publishedAt2, value = fecha$getElementText())
+    
+    driver$client$goBack()
+    
+    Sys.sleep(2)
+    title_click <- driver$client$findElements(using = "css", value = ".result-title a")
+  }
+  
+  btn_atras <- driver$client$findElement(using = "css", value = "#sp-component li:nth-child(2) a")
+  btn_atras$clickElement()
+  
+  Sys.sleep(3)
+  contador <- contador + 1
+}
+  
 ```
 
 Armamos el dataframe para unirlo al data_medios
@@ -186,32 +276,68 @@ description <- rename(description, description = V1)
 publishedAt <- as.data.frame(t(t(publishedAt)))
 publishedAt <- rename(publishedAt, publishedAt = V1)
 
+title1 <- as.data.frame(t(t(title1)))
+title1 <- rename(title1, title = V1)
+
+description1 <- as.data.frame(t(t(description1)))
+description1 <- rename(description1, description = V1)
+
+publishedAt1 <- as.data.frame(t(t(publishedAt1)))
+publishedAt1 <- rename(publishedAt1, publishedAt = V1)
+
+title2 <- as.data.frame(t(t(title2)))
+title2 <- rename(title2, title = V1)
+
+description2 <- as.data.frame(t(t(description2)))
+description2 <- rename(description2, description = V1)
+
+publishedAt2 <- as.data.frame(t(t(publishedAt2)))
+publishedAt2 <- rename(publishedAt2, publishedAt = V1)
+
 data_rosario <- cbind(description, publishedAt, title)
+data_santafe <- cbind(description1, publishedAt1, title1)
+data_cba <- cbind(description2, publishedAt2, title2)
 
 #Agregamos las columnas faltantes
 data_rosario <- data_rosario %>%  mutate(., provider.name = "La Capital")
-data_rosario <- data_rosario %>%  mutate(., provider.scope = "Provincial")
+data_rosario <- data_rosario %>%  mutate(., provider.scope = "Local")
 
 data_rosario$description <- as.character(data_rosario$description)
 data_rosario$title <- as.character(data_rosario$title)
 data_rosario$publishedAt <- as.character(data_rosario$publishedAt)
 data_rosario$publishedAt <- as.Date(data_rosario$publishedAt, format="%A %d de %B de %Y")
 
+data_santafe <- data_santafe %>%  mutate(., provider.name = "Uno Santa Fe")
+data_santafe <- data_santafe %>%  mutate(., provider.scope = "Provincial")
+
+data_santafe$description <- as.character(data_santafe$description)
+data_santafe$title <- as.character(data_santafe$title)
+data_santafe$publishedAt <- as.character(data_santafe$publishedAt)
+data_santafe$publishedAt <- as.Date(data_santafe$publishedAt, format="%A %d de %B de %Y")
+
+data_cba <- data_cba %>%  mutate(., provider.name = "Hoy Día Córdoba")
+data_cba<- data_cba %>%  mutate(., provider.scope = "Local")
+
+data_cba$description <- as.character(data_cba$description)
+data_cba$title <- as.character(data_cba$title)
+data_cba$publishedAt <- as.character(data_cba$publishedAt)
+data_cba$publishedAt <- as.Date(data_cba$publishedAt, format="%d de %B de %Y")
+
 #Unificamos los data frames
-data_medios <- rbind(data_medios, data_rosario)
+data_medios <- rbind(data_medios, data_rosario, data_santafe, data_cba)
 
 #Cambiamos nombres a columnas
 data_medios <- rename(data_medios, date = publishedAt)
 data_medios <- rename(data_medios, name_medio = provider.name)
 data_medios <- rename(data_medios, scope_medio = provider.scope)
 
+#una última limpieza
+
+data_medios <- filter(data_medios[-c(53, 134, 145, 190, 199,303,329,336,338,413,419,420,421,422,423,424,425), ])
+
 View(data_medios)
 
 write_csv(data_medios, "data_medios.csv")
-
-#Hacemos unas consultas para ver la representación de los distintos medios
-data_medios %>% group_by(scope_medio) %>% count()
-data_medios %>% group_by(name_medio) %>% count()
 
 ```
 
