@@ -99,9 +99,15 @@ argentina <- argentina %>% left_join(cantidad, by="provincia")
 
 str(cantidad_pais)
 
-cantidad %>% 
-  filter(anio == 2019) %>% 
-  select(anio, provincia, incendio_total_numero) %>% 
+cantidad_argentina <- argentina %>% left_join(cantidad, by="provincia")
+
+
+cantidad_argentina %>% 
+  filter(anio == 2018) %>% #Graficamos cantidad de incendios x provincia en 2018
+  ggplot()+
+  geom_sf(data = cantidad_argentina, aes(fill = incendio_total_numero))+
+  coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
+  theme_void()
 
 ```
 
