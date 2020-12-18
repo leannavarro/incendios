@@ -11,7 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(data.table)
 library(readxl)
-options(scipen = 99)
+library(georefar)
+library(sf)
+library(ggmap)
 rm(list = ls())
 
 setwd("C:/Users/Leandro/Documents/incendios/")
@@ -19,7 +21,9 @@ setwd("C:/Users/Leandro/Documents/incendios/")
 ```
 
 ```{r}
-cantidad <- read.csv("cantidad.csv", sep = ";")
+#Cargamos y limpiamos el dataset de cantidad de incendios
+
+cantidad <- read.csv("http://datos.ambiente.gob.ar/dataset/12f60bea-3225-4375-935c-1fb9ebe3ef57/resource/93c2f293-9698-4457-92cf-e07856d8edb2/download/incendios-cantidad-causas-provincia.csv", sep = ";")
 
 str(cantidad)
 
@@ -38,9 +42,13 @@ cantidad$provincia <- gsub(cantidad$provincia , pattern = " ", replacement = "_"
 ```
 
 ```{r}
+#Cargamos y limpiamos el dataset de superficie afectada por incendios
+
 superficie <- read.csv("superficie.csv", sep = ";")
 
-str(superficie)
+superficie2 <- read.csv("http://datos.ambiente.gob.ar/dataset/12f60bea-3225-4375-935c-1fb9ebe3ef57/resource/c7b70f96-5562-4673-9b61-6ead123a99f7/download/superficie-incendiada-provincias-tipo-de-vegetacion.csv", sep = ";")
+
+str(superficie2)
 
 superficie <- superficie %>%  #uno las columnas con gather para agrupar la data en tidy format
   gather(key = "superficie_afectada_tipo",
@@ -53,6 +61,53 @@ superficie <- superficie %>% #renombro la variable
 
 superficie$provincia <- tolower(superficie$provincia) #paso todo a minúscula
 superficie$provincia <- gsub(superficie$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
+
+```
+
+```{r}
+#Creamos mapas animados sobre incendios
+
+#descargo el shp de aca https://datos.gob.ar/ar/dataset/jgm-servicio-normalizacion-datos-geograficos/archivo/jgm_8.26
+
+argentina <- st_read("provincias.shp")
+
+str(argentina)
+class(argentina)
+
+argentina
+
+argentina <- argentina %>% 
+  select(NAM, geometry) %>% 
+  rename(provincia = NAM)
+
+unique(argentina$provincia)
+
+argentina$provincia <- tolower(argentina$provincia) #paso todo a minúscula
+argentina$provincia<- gsub(argentina$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
+argentina$provincia <- gsub(argentina$provincia , pattern = ",_antártida_e_islas_del_atlántico_sur", replacement = "")
+
+class(cantidad_pais)
+
+
+
+ggplot()+
+  geom_sf(data = cantidad_pais)+
+  coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
+  theme_void()
+
+argentina <- argentina %>% left_join(cantidad, by="provincia")
+
+str(cantidad_pais)
+
+cantidad_argentina <- argentina %>% left_join(cantidad, by="provincia")
+
+
+cantidad_argentina %>% 
+  filter(anio == 2018) %>% #Graficamos cantidad de incendios x provincia en 2018
+  ggplot()+
+  geom_sf(data = cantidad_argentina, aes(fill = incendio_total_numero))+
+  coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
+  theme_void()
 
 ```
 
