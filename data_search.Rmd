@@ -11,6 +11,8 @@ library(jsonlite)
 library(rvest)
 library(tidyverse)
 library(tm)
+library(RSelenium)
+library(tidytext)
 ```
 
 Conectamos con la API de Jornalia (https://jornalia.net/) para traer artículos relacionados a los incendios de los principales medios
@@ -34,6 +36,7 @@ path6 <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454
 path7 <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454d9299a2c619803898&search=incendios+forestales&providers=Clarin%2CTN%2CPagina12%2CLaNacion%2CTelam%2CInfobae%2CLaVozCB%2CCadena3CB%2CLaTinta&categories=LOCALES%2CNACIONALES%2CSOCIEDAD%2CPOLITICA%2CECONOMIA&startDate=2020-10-08&endDate=2020-10-12")
 
 path8 <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454d9299a2c619803898&search=incendios+forestales&providers=Clarin%2CTN%2CPagina12%2CLaNacion%2CTelam%2CInfobae%2CLaVozCB%2CCadena3CB%2CLaTinta&categories=LOCALES%2CNACIONALES%2CSOCIEDAD%2CPOLITICA%2CECONOMIA&startDate=2020-10-13&endDate=2020-10-20")
+
 
 response <- GET(url = path)
 response2 <- GET(url = path2)
@@ -110,7 +113,100 @@ data_incendios <- filter(data_incendios[-(21:23), ])
 data_incendios <- filter(data_incendios[-c(190, 213, 305, 320), ])
 
 View(data_incendios)
+
+#nos quedamos con las variables que nos sirven
+
+data_medios <- filter(data_incendios[,-c(1,2,3,5,8,9,10,13)])
+
+#limpiamos la columna de fechas
+data_medios$publishedAt <- data_medios$publishedAt %>% substr(., start = 1, stop = 10)
+
+data_medios$publishedAt <- as.Date(data_medios$publishedAt , format="%Y-%m-%d")
+
 ```
 
+Ahora vamos a sumar registros del diario La Capital de Rosario, para tener mayor representación de medios provinciales en el dataset y poder nutrir el análisis. Como este medio no está en la API vamos a scrapear los articulos sobre el mismo tema, para las mismas fechas.
 
+```{r}
+#usamos la librería RSelenium que nos permite navegar por el sitio web y scrapear los datos
+#hasta pag 4 inclusive
+
+url_origen <- "https://www.lacapital.com.ar/incendios-s.html/14"
+
+contador <- 1 #para limitar la cantidad de registros a traer según las páginas
+
+title <- c()
+description <- c()
+publishedAt <- c()
+
+driver<- rsDriver(port= 2235L, chromever = "87.0.4280.88")
+remDr <- driver[["client"]]
+remDr$navigate(url_origen)
+remDr$open()
+
+while(contador < 12){ #traigo las 11 páginas que entran en el período establecido
+  
+  title_click <- driver$client$findElements(using = "css", value = ".article-news-title") #busco los comentarios
+  for(ele in 1:length(title_click)) {
+    title_click[[ele]]$clickElement()
+    
+    Sys.sleep(2)
+    
+    titulo <- driver$client$findElement(using = "css", value = ".news-header-title")
+    title <- append(title, value =titulo$getElementText()) #guardo los comentarios
+    descripcion <- driver$client$findElement(using = "css", value = ".news-header-description")
+    description <- append(description, value = descripcion$getElementText())
+    fecha <- driver$client$findElement(using = "css", value = ".paragraph-date")
+    publishedAt <- append(publishedAt, value = fecha$getElementText())
+    
+    driver$client$goBack()
+    
+    Sys.sleep(1)
+    title_click <- driver$client$findElements(using = "css", value = ".article-news-title")
+  }
+  
+  btn_atras <- driver$client$findElement(using = "css", value = ".prev")
+  btn_atras$clickElement()
+  
+  Sys.sleep(3)
+  contador <- contador + 1
+}
+
+
+```
+
+Armamos el dataframe para unirlo al data_medios
+```{r}
+title <- as.data.frame(t(t(title)))
+title <- rename(title, title = V1)
+
+description <- as.data.frame(t(t(description)))
+description <- rename(description, description = V1)
+
+publishedAt <- as.data.frame(t(t(publishedAt)))
+publishedAt <- rename(publishedAt, publishedAt = V1)
+
+data_rosario <- cbind(description, publishedAt, title)
+
+data_rosario <- data_rosario %>%  mutate(., provider.name = "La Capital")
+
+data_rosario <- data_rosario %>%  mutate(., provider.scope = "Provincial")
+
+data_rosario$description <- as.character(data_rosario$description)
+data_rosario$title <- as.character(data_rosario$title)
+data_rosario$publishedAt <- as.character(data_rosario$publishedAt)
+
+data_rosario$publishedAt <- as.Date(data_rosario$publishedAt, format="%A %d de %B de %Y")
+
+data_medios <- rbind(data_medios, data_rosario)
+
+data_medios <- rename(data_medios, date = publishedAt)
+data_medios <- rename(data_medios, name_medio = provider.name)
+data_medios <- rename(data_medios, scope_medio = provider.scope)
+
+View(data_medios)
+
+write_csv(data_medios, "data_medios.csv")
+
+```
 
