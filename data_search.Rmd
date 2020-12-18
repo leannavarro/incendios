@@ -188,18 +188,19 @@ publishedAt <- rename(publishedAt, publishedAt = V1)
 
 data_rosario <- cbind(description, publishedAt, title)
 
+#Agregamos las columnas faltantes
 data_rosario <- data_rosario %>%  mutate(., provider.name = "La Capital")
-
 data_rosario <- data_rosario %>%  mutate(., provider.scope = "Provincial")
 
 data_rosario$description <- as.character(data_rosario$description)
 data_rosario$title <- as.character(data_rosario$title)
 data_rosario$publishedAt <- as.character(data_rosario$publishedAt)
-
 data_rosario$publishedAt <- as.Date(data_rosario$publishedAt, format="%A %d de %B de %Y")
 
+#Unificamos los data frames
 data_medios <- rbind(data_medios, data_rosario)
 
+#Cambiamos nombres a columnas
 data_medios <- rename(data_medios, date = publishedAt)
 data_medios <- rename(data_medios, name_medio = provider.name)
 data_medios <- rename(data_medios, scope_medio = provider.scope)
@@ -207,6 +208,10 @@ data_medios <- rename(data_medios, scope_medio = provider.scope)
 View(data_medios)
 
 write_csv(data_medios, "data_medios.csv")
+
+#Hacemos unas consultas para ver la representación de los distintos medios
+data_medios %>% group_by(scope_medio) %>% count()
+data_medios %>% group_by(name_medio) %>% count()
 
 ```
 
