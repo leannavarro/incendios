@@ -13,6 +13,7 @@ library(data.table)
 library(readxl)
 library(sf)
 rm(list = ls())
+options(scipen = 99)
 
 ```
 
@@ -42,9 +43,8 @@ cantidad$provincia <- gsub(cantidad$provincia , pattern = " ", replacement = "_"
 
 superficie <- read.csv("superficie.csv", sep = ";")
 
-superficie2 <- read.csv("http://datos.ambiente.gob.ar/dataset/12f60bea-3225-4375-935c-1fb9ebe3ef57/resource/c7b70f96-5562-4673-9b61-6ead123a99f7/download/superficie-incendiada-provincias-tipo-de-vegetacion.csv", sep = ";")
 
-str(superficie2)
+str(superficie)
 
 superficie <- superficie %>%  #uno las columnas con gather para agrupar la data en tidy format
   gather(key = "superficie_afectada_tipo",
@@ -63,8 +63,6 @@ superficie$provincia <- gsub(superficie$provincia , pattern = " ", replacement =
 ```{r}
 #Creamos mapas animados sobre incendios
 
-#descargo el shp de aca https://datos.gob.ar/ar/dataset/jgm-servicio-normalizacion-datos-geograficos/archivo/jgm_8.26
-
 argentina <- st_read("https://raw.githubusercontent.com/aaizemberg/geo-data/gh-pages/ar/provincias_indec_2010.geojson")
 
 str(argentina)
@@ -81,24 +79,27 @@ argentina$provincia <- tolower(argentina$provincia) #paso todo a minúscula
 argentina$provincia<- gsub(argentina$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
 
 
-
-
-ggplot()+
+ggplot()+ #Tiramos un mapa de Arg a ver que onda
   geom_sf(data = argentina)+
   coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
   theme_void()
 
 cantidad_mapa <- argentina %>% left_join(cantidad, by="provincia")
+superficie_mapa <- argentina %>% left_join(superficie, by = "provincia")
 
 str(cantidad_mapa)
+str(superficie_mapa)
 
-
+#Probmas el mapa
 cantidad_mapa %>% 
-  filter(anio == 2018) %>% #Graficamos cantidad de incendios x provincia en 2018
-  ggplot()+
-  geom_sf(data = cantidad_argentina, aes(fill = incendio_total_numero))+
+  select(anio, provincia, incendio_total_numero) %>%
+  filter(anio == 2018 & provincia == "parques_nacionales") %>% 
+  select(anio, provincia, incendio_total_numero) %>% 
+  ggplot()+#Graficamos cantidad de incendios x provincia en 2018
+  geom_sf(data = cantidad_mapa, aes(fill = incendio_total_numero))+
   coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
-  theme_void()
+  theme_void()+
+  scale_fill_viridis_c()
 
 ```
 
