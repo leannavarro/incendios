@@ -61,15 +61,13 @@ superficie$provincia <- gsub(superficie$provincia , pattern = " ", replacement =
 ```
 
 ```{r}
-#Creamos mapas animados sobre incendios
+# Mapa de argentina
 
 argentina <- st_read("https://raw.githubusercontent.com/aaizemberg/geo-data/gh-pages/ar/provincias_indec_2010.geojson")
 
 str(argentina)
 class(argentina)
 
-
-argentina
 
 argentina <- argentina %>% 
   select(provincia, geometry) 
@@ -91,11 +89,10 @@ superficie_mapa <- argentina %>% left_join(superficie, by = "provincia")
 str(cantidad_mapa)
 str(superficie_mapa)
 
-#Probmas el mapa
+#Probmas el mapa con la cantidad de incendios
 cantidad_mapa %>% 
   select(anio, provincia, incendio_total_numero) %>%
   filter(anio == 2018 & provincia == "parques_nacionales") %>% 
-  select(anio, provincia, incendio_total_numero) %>% 
   ggplot()+#Graficamos cantidad de incendios x provincia en 2018
   geom_sf(data = cantidad_mapa, aes(fill = incendio_total_numero))+
   coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
