@@ -11,12 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(data.table)
 library(readxl)
-library(georefar)
 library(sf)
-library(ggmap)
 rm(list = ls())
-
-setwd("C:/Users/Leandro/Documents/incendios/")
 
 ```
 
@@ -69,7 +65,7 @@ superficie$provincia <- gsub(superficie$provincia , pattern = " ", replacement =
 
 #descargo el shp de aca https://datos.gob.ar/ar/dataset/jgm-servicio-normalizacion-datos-geograficos/archivo/jgm_8.26
 
-argentina <- st_read("provincias.shp")
+argentina <- st_read("https://raw.githubusercontent.com/aaizemberg/geo-data/gh-pages/ar/provincias_indec_2010.geojson")
 
 str(argentina)
 class(argentina)
@@ -77,32 +73,27 @@ class(argentina)
 argentina
 
 argentina <- argentina %>% 
-  select(NAM, geometry) %>% 
-  rename(provincia = NAM)
+  select(provincia, geometry) 
 
 unique(argentina$provincia)
 
 argentina$provincia <- tolower(argentina$provincia) #paso todo a minúscula
 argentina$provincia<- gsub(argentina$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
-argentina$provincia <- gsub(argentina$provincia , pattern = ",_antártida_e_islas_del_atlántico_sur", replacement = "")
 
-class(cantidad_pais)
 
 
 
 ggplot()+
-  geom_sf(data = cantidad_pais)+
+  geom_sf(data = argentina)+
   coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
   theme_void()
 
-argentina <- argentina %>% left_join(cantidad, by="provincia")
+cantidad_mapa <- argentina %>% left_join(cantidad, by="provincia")
 
-str(cantidad_pais)
-
-cantidad_argentina <- argentina %>% left_join(cantidad, by="provincia")
+str(cantidad_mapa)
 
 
-cantidad_argentina %>% 
+cantidad_mapa %>% 
   filter(anio == 2018) %>% #Graficamos cantidad de incendios x provincia en 2018
   ggplot()+
   geom_sf(data = cantidad_argentina, aes(fill = incendio_total_numero))+
