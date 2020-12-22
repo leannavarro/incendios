@@ -68,6 +68,7 @@ argentina <- st_read("https://raw.githubusercontent.com/aaizemberg/geo-data/gh-p
 str(argentina)
 class(argentina)
 
+
 argentina
 
 argentina <- argentina %>% 
