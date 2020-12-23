@@ -20,7 +20,7 @@ options(scipen = 99)
 ```{r}
 #Cargamos y limpiamos el dataset de cantidad de incendios
 
-cantidad <- read.csv("http://datos.ambiente.gob.ar/dataset/12f60bea-3225-4375-935c-1fb9ebe3ef57/resource/93c2f293-9698-4457-92cf-e07856d8edb2/download/incendios-cantidad-causas-provincia.csv", sep = ";")
+cantidad <- read.csv("cantidad.csv", sep = ";")
 
 str(cantidad)
 
