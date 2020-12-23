@@ -65,6 +65,7 @@ superficie$provincia <- gsub(superficie$provincia , pattern = " ", replacement =
 
 argentina <- st_read("https://raw.githubusercontent.com/aaizemberg/geo-data/gh-pages/ar/provincias_indec_2010.geojson")
 
+
 str(argentina)
 class(argentina)
 
