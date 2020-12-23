@@ -66,6 +66,12 @@ superficie <- superficie %>% #renombro la variable
 
 superficie$provincia <- tolower(superficie$provincia) #paso todo a minúscula
 superficie$provincia <- gsub(superficie$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
+superficie$provincia <- gsub(superficie$provincia , pattern = "río_negro", replacement = "rio_negro")
+superficie$provincia <- gsub(superficie$provincia , pattern = "entre_ríos", replacement = "entre_rios")
+superficie$provincia <- gsub(superficie$provincia , pattern = "córdoba", replacement = "cordoba")
+superficie$provincia <- gsub(superficie$provincia , pattern = "neuquén", replacement = "neuquen")
+superficie$provincia <- gsub(superficie$provincia , pattern = "santa_fé", replacement = "santa_fe")
+superficie$provincia <- gsub(superficie$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
 
 ```
 
@@ -84,7 +90,7 @@ argentina <- argentina %>%
 unique(argentina$provincia)
 
 argentina$provincia <- tolower(argentina$provincia) #paso todo a minúscula
-argentina$provincia<- gsub(argentina$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
+argentina$provincia <- gsub(argentina$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
 
 
 ggplot()+ #Tiramos un mapa de Arg a ver que onda
