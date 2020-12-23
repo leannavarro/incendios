@@ -35,6 +35,15 @@ cantidad <- cantidad %>% #renombro la variable
 
 cantidad$provincia <- tolower(cantidad$provincia) #paso todo a minúscula
 cantidad$provincia <- gsub(cantidad$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "río_negro", replacement = "rio_negro")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "entre_ríos", replacement = "entre_rios")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "córdoba", replacement = "cordoba")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "neuquén", replacement = "neuquen")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "santa_fé", replacement = "santa_fe")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
+
+
+unique(cantidad$provincia)
 
 ```
 
@@ -69,7 +78,6 @@ argentina <- st_read("https://raw.githubusercontent.com/aaizemberg/geo-data/gh-p
 str(argentina)
 class(argentina)
 
-
 argentina <- argentina %>% 
   select(provincia, geometry) 
 
@@ -92,10 +100,10 @@ str(superficie_mapa)
 
 #Probmas el mapa con la cantidad de incendios
 cantidad_mapa %>% 
-  select(anio, provincia, incendio_total_numero) %>%
-  filter(anio == 2018 & provincia == "parques_nacionales") %>% 
-  ggplot()+#Graficamos cantidad de incendios x provincia en 2018
-  geom_sf(data = cantidad_mapa, aes(fill = incendio_total_numero))+
+  filter(anio == 2018) %>% 
+  ggplot()+ #Graficamos cantidad de incendios x provincia en 2018
+  geom_sf(data = cantidad_mapa) +
+  geom_sf(aes(fill = incendio_total_numero))+
   coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
   theme_void()+
   scale_fill_viridis_c()
