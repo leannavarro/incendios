@@ -1,0 +1,330 @@
+---
+title: "Tet mining"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(tm)
+library(tidytext)
+library(wordcloud2)
+library(plotly)
+library(topicmodels)
+```
+
+Armamos el corpus de palabras, para lo cual vamos a juntar las columnas de título (title) y bajada (description) que contienen el texto. El análisis se va a centrar en los medios y su alcance, por lo cual la columna de fecha la descartamos.  
+```{r}
+data <- read.csv("data_medios.csv", encoding = "UTF-8")
+
+#Guardamos la fecha de inicio y la final para futuras referencias
+fecha_origen <- min(data$date)
+fecha_final <- max(data$date)
+
+
+data$date <- NULL
+
+#Separamos las columnas y renombramos
+title_data <- data %>% select(title, name_medio, scope_medio)
+description_data <- data %>% select(description, name_medio, scope_medio)
+
+title_data <- rename(title_data, word = title)
+description_data <- rename(description_data, word = description)
+
+data <- rbind(title_data, description_data)
+
+#Tokenizamos
+data_token <- data %>%
+  unnest_tokens(word, word)
+
+head(data_token)
+
+```
+
+```{r}
+# Data frame de stop words en español, de la librería tm
+
+custom_stop_words <- data_frame(word = tm::stopwords("spanish"),
+                                          lexicon = "custom")
+
+
+# Antijoin para sacar de los tokens las stop words
+data_token <- data_token %>%
+  anti_join(custom_stop_words)
+
+
+#Vemos frecuencias de palabras en todo el corpus
+data_token %>%
+  count(word, sort = TRUE)
+
+#Luego sacamos otras palabras que no aportan la análisis
+stop_personalizadas <- tibble(word = c("incendios", "incendio", "córdoba", "dos", "tres", "mil", "san", "amp", 
+                                       "si", "10", "así", "ldquo", "rdquo", "br"))
+
+data_token <- data_token %>%
+  anti_join(stop_personalizadas)
+
+data_token %>%
+  count(word, sort = TRUE)
+
+# Ploteamos las palabras más frecuentes
+data_token %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 50) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip()
+
+```
+
+```{r}
+#Vemos según alcance
+data_token %>% distinct(scope_medio, word) %>%  
+                group_by(scope_medio) %>%
+                summarise(palabras_distintas = n())
+
+data_token %>% group_by(scope_medio, word) %>% count(word) %>%  group_by(scope_medio) %>%
+                top_n(5, n) %>% arrange(scope_medio, desc(n)) %>%
+                ggplot(aes(x = reorder(word,n), y = n, fill = scope_medio)) +
+                geom_col() +
+                theme_light() +
+                theme(legend.position = "none") +
+                coord_flip() +
+                facet_wrap(~scope_medio,scales = "free", ncol = 1, drop = TRUE)
+
+#Vemos según medio
+data_token %>% distinct(name_medio, word) %>%  
+                group_by(name_medio) %>%
+                summarise(palabras_distintas = n())
+
+data_token %>% group_by(name_medio, word) %>% count(word) %>%  group_by(name_medio) %>%
+                top_n(5, n) %>% arrange(name_medio, desc(n)) %>%
+                ggplot(aes(x = reorder(word,n), y = n, fill = name_medio)) +
+                geom_col() +
+                theme_light() +
+                theme(legend.position = "none") + coord_flip()+
+                facet_wrap(~name_medio,scales = "free", ncol = 4, drop = TRUE)
+```
+
+Nube de palabras
+```{r}
+data_token %>% 
+    count(word, sort=T) %>% 
+    wordcloud2( size = 0.9, color = "random-dark", backgroundColor = "skyblue")
+
+#personalizamos la forma
+data_token %>% 
+    count(word, sort=T) %>% 
+    wordcloud2(figPath = "arbol.jpg", size = 0.7, color = "random-dark")
+```
+
+Calculamos el tf-idf
+
+```{r}
+# Cantidad de palabras por alcance
+data_token_group <- data_token %>%
+  count(scope_medio, name_medio, word, sort = TRUE)
+
+# Cantidad total de palabras alcance
+total_palabras <- data_token_group %>% 
+  group_by(scope_medio) %>% 
+  summarize(total = sum(n))
+
+# Uno los dataframes
+data_token_group <- left_join(data_token_group, total_palabras)
+
+
+#Calculamos
+data_token_group <- data_token_group %>%
+  bind_tf_idf(word, scope_medio, n)
+
+# Ploteamos las palabras por tf_idf
+
+data_token_group %>%
+  arrange(desc(tf_idf)) %>%
+  mutate(word = factor(word, levels = rev(unique(word)))) %>% 
+  group_by(scope_medio) %>% 
+  top_n(10) %>% 
+  ungroup() %>%
+  ggplot(aes(word, tf_idf, fill = scope_medio)) +
+  geom_col(show.legend = FALSE) +
+  theme_classic() +
+  facet_wrap(~scope_medio, ncol = 3, scales = "free") +
+  coord_flip()
+
+```
+
+
+Ngramas
+
+```{r}
+bigramas <- data %>%
+  unnest_tokens(word, word, token = "ngrams", n = 2)
+
+bigrams_separated <- bigramas %>%
+  separate(word, c("word1", "word2"), sep = " ")
+
+bigrams_filtered <- bigrams_separated %>%
+  filter(!word1 %in% custom_stop_words$word) %>%
+  filter(!word2 %in% custom_stop_words$word)
+
+bigrams_filtered %>%
+  count(word1, word2, sort = TRUE)
+
+bigrams_united <- bigrams_filtered %>%
+  unite(bigram, word1, word2, sep = " ")
+
+bigrams_united %>% count(bigram, sort = TRUE)
+
+bigram_stop_personalizado <- tibble(bigram = c("amp rdquo", "amp ldquo"))
+                                    
+bigrams_united <- bigrams_united %>% anti_join(bigram_stop_personalizado)
+
+bigrams_united %>% group_by(scope_medio) %>% 
+  count(bigram, sort = TRUE) %>% 
+  top_n(10) %>% 
+  filter(n > 2) %>% 
+  ggplot(aes(x = reorder(bigram,n), y = n, fill = scope_medio)) +
+  geom_col() +
+  theme_classic() +
+  facet_wrap(~scope_medio,scales = "free", ncol = 3, drop = TRUE) + 
+  coord_flip()
+
+bigrams_united %>% group_by(name_medio) %>% 
+  count(bigram, sort = TRUE) %>% 
+  top_n(10) %>% 
+  filter(n > 2) %>% 
+  ggplot(aes(x = reorder(bigram,n), y = n, fill = name_medio)) +
+  geom_col() +
+  theme_classic() +
+  facet_wrap(~name_medio,scales = "free", ncol = 3, drop = TRUE) + 
+  coord_flip()
+
+```
+
+Topic Modelling
+```{r}
+data_conteo <- data_token %>% unite(scope_name, scope_medio, name_medio) %>% count(scope_name, word, sort=TRUE)
+
+data_dtm <- data_conteo %>%
+  cast_dtm(scope_name, word, n)
+
+# Con k indico la cantidad de tópicos, es un hiperparámetro a buscar
+data_lda <- LDA(data_dtm, k = 3, control = list(seed = 150))
+
+# Paso el objeto a tidy, beta son las probabilidades per-topic-per-word
+data_lda_td <- tidy(data_lda, matrix = "beta")
+
+# Veo los términos más frecuentes de mi topic modelling
+terminos_frecuentes <- data_lda_td %>%
+  group_by(topic) %>%
+  top_n(20, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+
+# Ploteo mis tópicos
+terminos_frecuentes %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
+
+```
+
+Análisis de sentimientos
+```{r}
+sentimientos <- read_tsv("https://raw.githubusercontent.com/7PartidasDigital/AnaText/master/datos/diccionarios/sentimientos_2.txt",col_types = "cccn", locale = default_locale())
+
+sentimientos <- sentimientos %>% rename(word=palabra)
+
+source("https://raw.githubusercontent.com/7PartidasDigital/R-LINHD-18/master/get_sentiments.R")
+
+```
+
+
+```{r}
+
+#Probamos con bing y nrc
+data_token %>%
+  right_join(get_sentiments("nrc")) %>%
+  filter(!is.na(sentimiento)) %>%
+  count(sentimiento, sort = TRUE)
+
+data_token %>%
+  right_join(get_sentiments("bing")) %>%
+  filter(!is.na(sentimiento)) %>%
+  count(sentimiento, sort = TRUE)
+
+# Vemos por alcance y medio 
+data_token %>%
+  right_join(get_sentiments("nrc")) %>%
+  filter(!is.na(sentimiento)) %>%
+  count(scope_medio, sentimiento, sort = TRUE) %>%
+  arrange(scope_medio, desc(n), sentimiento)
+
+data_token %>%
+  right_join(get_sentiments("bing")) %>%
+  filter(!is.na(sentimiento)) %>%
+  count(name_medio, sentimiento, sort = TRUE) %>%
+  arrange(name_medio, desc(n), sentimiento)
+
+
+```     
+
+Graficamos
+```{r}
+#Ploteamos por alcance con nrc y bing
+data_token %>%
+  right_join(get_sentiments("nrc")) %>%
+  na.omit() %>%
+  filter(sentimiento != "negativo" & sentimiento !="positivo") %>% 
+  count(scope_medio, sentimiento, sort = TRUE) %>%
+  arrange(scope_medio, desc(n), sentimiento) %>% 
+  ggplot(aes(reorder(sentimiento, n), n, fill = sentimiento)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  scale_fill_brewer(palette = "Spectral") +
+  theme_minimal() +
+  facet_wrap(~ scope_medio, ncol = 3, scales = "free_x")+
+  coord_flip()
+
+data_token %>%
+  right_join(get_sentiments("bing")) %>%
+  na.omit() %>%
+  count(scope_medio, sentimiento, sort = TRUE) %>%
+  arrange(scope_medio, desc(n), sentimiento) %>% 
+  ggplot(aes(reorder(sentimiento, n), n, fill = sentimiento)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  scale_fill_brewer(palette = "Spectral") +
+  theme_minimal() +
+  facet_wrap(~ scope_medio, ncol = 3, scales = "free_x")
+
+#Ploteamos por medio con nrc y bing
+data_token %>%
+  right_join(get_sentiments("nrc")) %>%
+  na.omit() %>%
+  filter(sentimiento != "negativo" & sentimiento !="positivo") %>% 
+  count(name_medio, sentimiento, sort = TRUE) %>%
+  arrange(name_medio, desc(n), sentimiento) %>% 
+  ggplot(aes(reorder(sentimiento, n), n, fill = sentimiento)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  scale_fill_brewer(palette = "Spectral") +
+  theme_minimal() +
+  facet_wrap(~ name_medio, ncol = 3, scales = "free_x")+
+  coord_flip()
+
+data_token %>%
+  right_join(get_sentiments("bing")) %>%
+  na.omit() %>%
+  count(name_medio, sentimiento, sort = TRUE) %>%
+  arrange(name_medio, desc(n), sentimiento) %>% 
+  ggplot(aes(reorder(sentimiento, n), n, fill = sentimiento)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  scale_fill_brewer(palette = "Spectral") +
+  theme_minimal() +
+  facet_wrap(~ name_medio, ncol = 3, scales = "free_x") + 
+  coord_flip()
+
+```
+
