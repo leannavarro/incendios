@@ -20,7 +20,7 @@ options(scipen = 99)
 ```{r}
 #Cargamos y limpiamos el dataset de cantidad de incendios
 
-cantidad <- read.csv("http://datos.ambiente.gob.ar/dataset/12f60bea-3225-4375-935c-1fb9ebe3ef57/resource/93c2f293-9698-4457-92cf-e07856d8edb2/download/incendios-cantidad-causas-provincia.csv", sep = ";")
+cantidad <- read.csv("cantidad.csv", sep = ";")
 
 str(cantidad)
 
@@ -74,6 +74,35 @@ superficie$provincia <- gsub(superficie$provincia , pattern = "santa_fé", repla
 superficie$provincia <- gsub(superficie$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
 
 ```
+```{r}
+#Incorporamos dataset sobre tamaño de las provincias y  agregamos la columna al dataset de superficie afectada
+
+
+tamanio_arg <- read.csv("tamanio_provincias.csv", sep = ";", encoding = "UTF-8")
+
+str(tamanio_arg)
+
+tamanio_arg$provincia <- tamanio_arg$X.U.FEFF.provincia
+
+tamanio_arg$provincia <- tolower(tamanio_arg$provincia) #paso todo a minúscula
+tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = " ", replacement = "_") #reemplazo 
+tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "río_negro", replacement = "rio_negro")
+tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "entre_ríos", replacement = "entre_rios")
+tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "córdoba", replacement = "cordoba")
+tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "neuquén", replacement = "neuquen")
+tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "santa_fé", replacement = "santa_fe")
+tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
+
+tamanio_arg <- tamanio_arg %>% 
+  select(!X.U.FEFF.provincia)
+
+superficie <- tamanio_arg %>% left_join(superficie, by = "provincia")
+
+superficie <- superficie %>% 
+  mutate(ha_km2 = superficie_afectada_por_incendios_total_hectareas/100) %>% 
+  mutate(sup_prop = round(ha_km2/km2,2)) #Creamos la variable sup_prop para normalizar la prop de Ha afectadas, redondeamos a 2 decimales
+```
+
 
 ```{r}
 # Mapa de argentina
