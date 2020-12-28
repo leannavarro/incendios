@@ -8,7 +8,6 @@ library(tidyverse)
 library(tm)
 library(tidytext)
 library(wordcloud2)
-library(plotly)
 library(topicmodels)
 ```
 
@@ -32,7 +31,7 @@ description_data <- rename(description_data, word = description)
 
 data <- rbind(title_data, description_data)
 
-#Tokenizamos
+#Tokens
 data_token <- data %>%
   unnest_tokens(word, word)
 
@@ -57,8 +56,8 @@ data_token %>%
   count(word, sort = TRUE)
 
 #Luego sacamos otras palabras que no aportan la análisis
-stop_personalizadas <- tibble(word = c("incendios", "incendio", "córdoba", "dos", "tres", "mil", "san", "amp", 
-                                       "si", "10", "así", "ldquo", "rdquo", "br"))
+stop_personalizadas <- tibble(word = c("incendios", "incendio", "córdoba", "dos", "tres", "mil",
+                                       "san", "amp", "si", "10", "así", "ldquo", "rdquo", "br"))
 
 data_token <- data_token %>%
   anti_join(stop_personalizadas)
@@ -193,12 +192,11 @@ bigrams_united %>% group_by(scope_medio) %>%
 
 bigrams_united %>% group_by(name_medio) %>% 
   count(bigram, sort = TRUE) %>% 
-  top_n(10) %>% 
-  filter(n > 2) %>% 
+  top_n(1)  %>% 
   ggplot(aes(x = reorder(bigram,n), y = n, fill = name_medio)) +
   geom_col() +
   theme_classic() +
-  facet_wrap(~name_medio,scales = "free", ncol = 3, drop = TRUE) + 
+  scale_fill_brewer(palette = "Spectral") +
   coord_flip()
 
 ```
@@ -245,7 +243,6 @@ source("https://raw.githubusercontent.com/7PartidasDigital/R-LINHD-18/master/get
 
 
 ```{r}
-
 #Probamos con bing y nrc
 data_token %>%
   right_join(get_sentiments("nrc")) %>%
