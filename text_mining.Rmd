@@ -297,6 +297,14 @@ data_token %>%
   theme_minimal() +
   facet_wrap(~ scope_medio, ncol = 3, scales = "free_x")
 
+
+sentiments_nrc <- data_token %>%
+  right_join(get_sentiments("nrc")) %>%
+  na.omit() %>%
+  filter(sentimiento != "negativo" & sentimiento !="positivo") %>% 
+  count(scope_medio, name_medio, sentimiento, sort = TRUE) %>%
+  arrange(scope_medio, name_medio, desc(n), sentimiento) 
+
 #Ploteamos por medio con nrc y bing
 data_token %>%
   right_join(get_sentiments("nrc")) %>%
@@ -323,5 +331,10 @@ data_token %>%
   facet_wrap(~ name_medio, ncol = 3, scales = "free_x") + 
   coord_flip()
 
+sentiments_bing <- data_token %>% 
+  right_join(get_sentiments("bing")) %>%
+  na.omit() %>%
+  count(name_medio, scope_medio, sentimiento, sort = TRUE) %>%
+  arrange(name_medio, scope_medio, desc(n), sentimiento) 
 ```
 
