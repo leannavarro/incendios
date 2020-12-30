@@ -334,7 +334,8 @@ data_token %>%
 sentiments_bing <- data_token %>% 
   right_join(get_sentiments("bing")) %>%
   na.omit() %>%
-  count(name_medio, scope_medio, sentimiento, sort = TRUE) %>%
-  arrange(name_medio, scope_medio, desc(n), sentimiento) 
+  count(scope_medio, sentimiento, sort = TRUE) %>%
+  arrange(scope_medio, desc(n), sentimiento) 
+
 ```
 
