@@ -2,14 +2,18 @@ library(shiny)
 library(ggplot2)
 library(wordcloud2)
 library(tidyverse)
+library(plotly)
 
 options(scipen = 20)
 
 ui <- fluidPage(
+  theme = shinytheme("readable"),
   
-  titlePanel("Incendios forestales según los medios de comunicación"),
+  titlePanel("Incendios forestales según los medios de comunicación", windowTitle = "ShinyApp: Incendios forestales"),
   sidebarLayout(
     sidebarPanel(
+    
+      helpText("Análisis de artículos publicados entre el 27 de agosto y el 26 de octubre de 2020."),
     selectInput('output_medio',
                 label=h3('Seleccione alcance de los medios'),
                 choices = unique(data_token$scope_medio)
@@ -23,10 +27,15 @@ ui <- fluidPage(
     mainPanel( 
       wordcloud2Output('graficoWord'),
       br(),
-      fluidRow(column(6, plotOutput('graficoTf_idf')),
-               column(6, plotOutput('graficoBigrams'))),
-      fluidRow(column(4, plotOutput('graficoSentiments')),
-               column(8, plotOutput('graficoSentimentsMedios')))
+      fluidRow(column(6, plotlyOutput('graficoTf_idf')),
+               column(6, plotlyOutput('graficoBigrams'))),
+      
+    fluidRow(column(6, helpText("El TF-IDF mide la importancia de una palabra, 
+    teniendo en cuenta la frecuencia con la que esa misma 
+             palabra aparece en los artículos del resto de los medios."))),
+      br(),
+      fluidRow(column(4, plotlyOutput('graficoSentiments')),
+               column(8, plotlyOutput('graficoSentimentsMedios')))
       )
     )
 )
@@ -67,42 +76,48 @@ server <- function(input, output) {
       wordcloud2(size = 1, color = "random-dark")
   })
   
-  output$graficoTf_idf <- renderPlot({
-    tf_df() %>% top_n(5) %>% 
+  output$graficoTf_idf <- renderPlotly({
+   tf_p <-  tf_df() %>% top_n(5) %>% 
       ggplot(aes(x= word, y= tf_idf, fill = scope_medio)) +
-      geom_col(show.legend = FALSE) +
-      theme_classic() + 
+      geom_col() +
+      labs(x = "Palabra", y = "TF-IDF", title = "Índice de TF-IDF") +
+      theme_minimal() + 
       coord_flip()
+   ggplotly(tf_p) %>%  layout(showlegend = FALSE)
   
   })
   
-  output$graficoBigrams <- renderPlot({
-    bigrams() %>%  group_by(scope_medio) %>% 
+  output$graficoBigrams <- renderPlotly({
+    bigram_p <- bigrams() %>%  group_by(scope_medio) %>% 
       count(bigram, sort = TRUE) %>% 
       top_n(10) %>% 
       filter(n > 2) %>% 
       ggplot(aes(x = reorder(bigram,n), y = n, fill = scope_medio)) +
-      geom_col(show.legend = F) +
-      theme_classic() +
+      geom_col() +
+      labs(x = "Bigramas", y = "Cantidad de apariciones", title = "Bigramas con mayor presencia") +
+      theme_minimal() +
       coord_flip()
+    ggplotly(bigram_p) %>%  layout(showlegend = FALSE)
   })
   
-  output$graficoSentiments <- renderPlot({
-   bing() %>% 
-      ggplot(aes(reorder(sentimiento, n), n, fill = sentimiento)) +
-      geom_bar(stat = "identity", show.legend = FALSE) +
+  output$graficoSentiments <- renderPlotly({
+   bing_p <- ggplot(bing(), aes(sentimiento, n, fill = sentimiento)) +
+      geom_bar(stat = "identity") +
       scale_fill_brewer(palette = "Spectral") +
+      labs(x = "Sentimiento", y = "Intensidad", title = "Sentimiento por alcance de medios") +
       theme_minimal()
+   ggplotly(bing_p) %>%  layout(showlegend = FALSE)
   })
   
-  output$graficoSentimentsMedios <- renderPlot({
-    nrc() %>% 
-      ggplot(aes(reorder(sentimiento, n), n, fill = sentimiento)) +
-      geom_bar(stat = "identity", show.legend = FALSE) +
+  output$graficoSentimentsMedios <- renderPlotly({
+    nrc_p <- ggplot(nrc(), aes(reorder(sentimiento, n), n, fill = sentimiento)) +
+      geom_bar(stat = "identity") +
       scale_fill_brewer(palette = "Spectral") +
       theme_minimal() +
+      labs(x= NULL, y = "Intensidad", title = "Presencia de sentimientos por medio") +
       facet_wrap(~ name_medio, ncol = 2, scales = "free_x") +
       coord_flip()
+    ggplotly(nrc_p) %>%  layout(showlegend = FALSE)
   })
 
 }
