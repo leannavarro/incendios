@@ -3,6 +3,11 @@ library(ggplot2)
 library(wordcloud2)
 library(tidyverse)
 library(plotly)
+library(shinythemes)
+library(treemapify)
+library(ggthemes)
+library(highcharter)
+
 
 options(scipen = 20)
 
@@ -34,8 +39,9 @@ ui <- fluidPage(
     teniendo en cuenta la frecuencia con la que esa misma 
              palabra aparece en los artículos del resto de los medios."))),
       br(),
-      fluidRow(column(4, plotlyOutput('graficoSentiments')),
-               column(8, plotlyOutput('graficoSentimentsMedios')))
+      fluidRow(column(3, plotlyOutput('graficoSentiments')),
+               column(9, highchartOutput('graficoSentimentsMedios'))),
+    br()
       )
     )
 )
@@ -78,12 +84,13 @@ server <- function(input, output) {
   
   output$graficoTf_idf <- renderPlotly({
    tf_p <-  tf_df() %>% top_n(5) %>% 
-      ggplot(aes(x= word, y= tf_idf, fill = scope_medio)) +
-      geom_col() +
-      labs(x = "Palabra", y = "TF-IDF", title = "Índice de TF-IDF") +
-      theme_minimal() + 
-      coord_flip()
-   ggplotly(tf_p) %>%  layout(showlegend = FALSE)
+    ggplot(aes(x= word, y= tf_idf)) +
+     geom_segment(aes(x=word, xend=word, y=0, yend=tf_idf)) +
+     geom_point(size=4, color="red", fill=alpha("orange", 0.4), alpha=0.7, shape=21, stroke=2) +
+     labs(x = "Palabra", y = "TF-IDF", title = "Índice de TF-IDF") +
+     theme_minimal() +
+     coord_flip()
+   ggplotly(tf_p) %>% layout(showlegend = FALSE)
   
   })
   
@@ -96,30 +103,27 @@ server <- function(input, output) {
       geom_col() +
       labs(x = "Bigramas", y = "Cantidad de apariciones", title = "Bigramas con mayor presencia") +
       theme_minimal() +
-      coord_flip()
-    ggplotly(bigram_p) %>%  layout(showlegend = FALSE)
+      coord_flip() 
+    ggplotly(bigram_p) %>%layout(showlegend = FALSE)
   })
   
   output$graficoSentiments <- renderPlotly({
    bing_p <- ggplot(bing(), aes(sentimiento, n, fill = sentimiento)) +
       geom_bar(stat = "identity") +
       scale_fill_brewer(palette = "Spectral") +
-      labs(x = "Sentimiento", y = "Intensidad", title = "Sentimiento por alcance de medios") +
+      labs(x = "Sentimiento", y = "Intensidad", title = "Análisis sentimental") +
       theme_minimal()
-   ggplotly(bing_p) %>%  layout(showlegend = FALSE)
+   ggplotly(bing_p) %>% layout(showlegend = FALSE)
   })
   
-  output$graficoSentimentsMedios <- renderPlotly({
-    nrc_p <- ggplot(nrc(), aes(reorder(sentimiento, n), n, fill = sentimiento)) +
-      geom_bar(stat = "identity") +
-      scale_fill_brewer(palette = "Spectral") +
-      theme_minimal() +
-      labs(x= NULL, y = "Intensidad", title = "Presencia de sentimientos por medio") +
-      facet_wrap(~ name_medio, ncol = 2, scales = "free_x") +
-      coord_flip()
-    ggplotly(nrc_p) %>%  layout(showlegend = FALSE)
+  output$graficoSentimentsMedios <- renderHighchart({
+    
+    nrc_p <- nrc() %>%  hchart("treemap", hcaes(x = sentimiento, value = n, color = n)) %>% 
+      hc_colorAxis(stops = color_stops(colors = viridisLite::inferno(10, begin = 0.2)), 
+                   type = "logarithmic")
+    nrc_p 
   })
-
+ 
 }
 
 shinyApp(ui = ui, server = server)
