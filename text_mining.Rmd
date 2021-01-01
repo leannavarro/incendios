@@ -4,6 +4,7 @@ output: html_notebook
 ---
 
 ```{r}
+
 library(tidyverse)
 library(tm)
 library(tidytext)
@@ -201,36 +202,6 @@ bigrams_united %>% group_by(name_medio) %>%
 
 ```
 
-Topic Modelling
-```{r}
-data_conteo <- data_token %>% unite(scope_name, scope_medio, name_medio) %>% count(scope_name, word, sort=TRUE)
-
-data_dtm <- data_conteo %>%
-  cast_dtm(scope_name, word, n)
-
-# Con k indico la cantidad de tópicos, es un hiperparámetro a buscar
-data_lda <- LDA(data_dtm, k = 3, control = list(seed = 150))
-
-# Paso el objeto a tidy, beta son las probabilidades per-topic-per-word
-data_lda_td <- tidy(data_lda, matrix = "beta")
-
-# Veo los términos más frecuentes de mi topic modelling
-terminos_frecuentes <- data_lda_td %>%
-  group_by(topic) %>%
-  top_n(20, beta) %>%
-  ungroup() %>%
-  arrange(topic, -beta)
-
-# Ploteo mis tópicos
-terminos_frecuentes %>%
-  mutate(term = reorder(term, beta)) %>%
-  ggplot(aes(term, beta, fill = factor(topic))) +
-  geom_col(show.legend = FALSE) +
-  facet_wrap(~ topic, scales = "free") +
-  coord_flip()
-
-```
-
 Análisis de sentimientos
 ```{r}
 sentimientos <- read_tsv("https://raw.githubusercontent.com/7PartidasDigital/AnaText/master/datos/diccionarios/sentimientos_2.txt",col_types = "cccn", locale = default_locale())
@@ -302,8 +273,8 @@ sentiments_nrc <- data_token %>%
   right_join(get_sentiments("nrc")) %>%
   na.omit() %>%
   filter(sentimiento != "negativo" & sentimiento !="positivo") %>% 
-  count(scope_medio, name_medio, sentimiento, sort = TRUE) %>%
-  arrange(scope_medio, name_medio, desc(n), sentimiento) 
+  count(scope_medio, sentimiento, sort = TRUE) %>%
+  arrange(scope_medio, desc(n), sentimiento)
 
 #Ploteamos por medio con nrc y bing
 data_token %>%
@@ -338,4 +309,3 @@ sentiments_bing <- data_token %>%
   arrange(scope_medio, desc(n), sentimiento) 
 
 ```
-
