@@ -106,6 +106,7 @@ incendio_anio;incendio_provincia;incendio_total_numero;incendio_negligencia_nume
 1997;Neuquén;171;99;10;37;25
 1997;Río Negro;700;245;453;2;0
 1997;Salta;171;22;66;26;57
+1996;San Juan;0;0;0;0;0
 1997;San Juan;224;191;33;0;0
 1997;San Luis;69;66;0;0;3
 1997;Santa Cruz;15;14;0;1;0
@@ -157,6 +158,7 @@ incendio_anio;incendio_provincia;incendio_total_numero;incendio_negligencia_nume
 1999;Santa Fe;462;256;195;4;7
 1999;Santiago del Estero;4;0;0;0;4
 1999;Tierra del Fuego;29;25;2;0;2
+1998;Tucumán;0;0;0;0;0
 1999;Tucumán;7;1;6;0;0
 2000;Buenos Aires;3503;895;239;188;2181
 2000;Catamarca;15;6;9;0;0
@@ -294,6 +296,7 @@ incendio_anio;incendio_provincia;incendio_total_numero;incendio_negligencia_nume
 2005;Río Negro;2536;579;185;18;1754
 2005;Salta;1876;933;251;85;607
 2005;San Juan;263;184;79;0;0
+2004;San Luis;0;0;0;0;0
 2005;San Luis;63;0;3;0;60
 2005;Santa Cruz;40;40;0;0;0
 2005;Santa Fe;712;167;381;68;96
@@ -463,6 +466,8 @@ incendio_anio;incendio_provincia;incendio_total_numero;incendio_negligencia_nume
 2012;Santa Fe;1613;127;1472;0;14
 2012;Santiago del Estero;72;0;72;0;0
 2012;Tierra del Fuego;10;8;1;0;1
+2010;Tucumán;0;0;0;0;0
+2011;Tucumán;0;0;0;0;0
 2012;Tucumán;80;0;38;0;42
 2013;Buenos Aires;458;18;11;0;429
 2013;Catamarca;90;7;7;0;76
@@ -580,8 +585,10 @@ incendio_anio;incendio_provincia;incendio_total_numero;incendio_negligencia_nume
 2017;San Juan;882;415;467;0;0
 2017;San Luis;77;0;0;39;38
 2017;Santa Cruz;17;17;0;0;0
+2018;Santa Cruz;17;17;0;0;0
 2017;Santa Fe;1096;247;596;15;238
 2017;Santiago del Estero;99;0;0;1;98
+2018;Santiago del Estero;0;0;0;0;0
 2017;Tierra del Fuego;7;7;0;0;0
 2017;Tucumán;128;0;22;1;105
 2018;Buenos Aires;2879;84;39;61;2695
