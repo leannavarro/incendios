@@ -21,30 +21,24 @@ ui <- fluidPage(
   
 tabsetPanel(
   tabPanel('Mapas',
+           
            navlistPanel('Análisis Por:',
                         tabPanel('Cantidad de incendios',
-                                 selectizeInput(inputId = "anio", 
-                                             label = "Año:",
-                                             choices = unique(cantidad_mapa$anio),
-                                             selected = unique(cantidad_mapa$anio)[1],
-                                             multiple = FALSE),
                                  plotOutput('cantidad_incendios'),
-      
-                        
                         ),
                         
                         tabPanel('Superficie afectada',
-                                 selectizeInput(inputId = "anio", 
-                                                label = "Año:",
-                                                choices = unique(superficie_mapa$anio),
-                                                selected = unique(superficie_mapa$anio)[1],
-                                                multiple = FALSE),
-                                 plotOutput('superficie_incendios'),
+                                 plotOutput('superficie_incendios')
+                                 ),
                         
-           )
+                        selectInput(inputId = "anio", 
+                                    label = "Año:",
+                                    choices = unique(cantidad_mapa$anio),
+                                    selected = unique(cantidad_mapa$anio)[1],
+                                    multiple = FALSE)
            )
   ),
-           
+  
     tabPanel('Cobertura mediática',
              sidebarLayout(
                sidebarPanel(
