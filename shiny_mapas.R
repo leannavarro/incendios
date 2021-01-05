@@ -153,7 +153,7 @@ server <- function(input,output){
         ggplot(aes(x= word, y= tf_idf)) +
         geom_segment(aes(x=word, xend=word, y=0, yend=tf_idf)) +
         geom_point(size=4, color="red", fill=alpha("orange", 0.4), alpha=0.7, shape=21, stroke=2) +
-        labs(x = "Palabra", y = "TF-IDF", title = "Índice de TF-IDF") +
+        labs(x = NULL, y = "TF-IDF", title = "Palabras con mayor TF-IDF") +
         theme_minimal() +
         coord_flip()
       ggplotly(tf_p) %>% layout(showlegend = FALSE)
@@ -167,7 +167,7 @@ server <- function(input,output){
         filter(n > 2) %>% 
         ggplot(aes(x = reorder(bigram,n), y = n, fill = scope_medio)) +
         geom_col() +
-        labs(x = "Bigramas", y = "Cantidad de apariciones", title = "Bigramas con mayor presencia") +
+        labs(x = NULL, y = "Cantidad de apariciones", title = "Bigramas con mayor presencia") +
         theme_minimal() +
         coord_flip() 
       ggplotly(bigram_p) %>%layout(showlegend = FALSE)
