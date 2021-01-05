@@ -7,6 +7,7 @@ library(tidyverse)
 library(data.table)
 library(readxl)
 library(sf)
+library(wordcloud2)
 
 options(scipen = 999)
 
