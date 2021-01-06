@@ -8,6 +8,9 @@ library(data.table)
 library(readxl)
 library(sf)
 library(wordcloud2)
+library(viridis)
+library(DT)
+
 
 options(scipen = 999)
 
@@ -17,27 +20,43 @@ options(scipen = 999)
 
 ui <- fluidPage(
   theme = shinytheme("cosmo"),
-  titlePanel(title= 'Incendios'),
+  titlePanel(title= 'Análisis de incendios en Argentina'),
   
-tabsetPanel(
-  tabPanel('Mapas',
-           
-           navlistPanel('Análisis Por:',
-                        tabPanel('Cantidad de incendios',
-                                 plotOutput('cantidad_incendios'),
-                        ),
+  tabsetPanel(
+    tabPanel('Mapas',
+             navlistPanel('Análisis Por',
+                          
                         
-                        tabPanel('Superficie afectada',
-                                 plotOutput('superficie_incendios')
-                                 ),
-                        
-                        selectInput(inputId = "anio", 
-                                    label = "Año:",
-                                    choices = unique(cantidad_mapa$anio),
-                                    selected = unique(cantidad_mapa$anio)[1],
-                                    multiple = FALSE)
-           )
-  ),
+                          
+                          tabPanel('Cantidad de incendios',
+                                   selectInput(inputId = "anio1", 
+                                               label = h3("Año:"),
+                                               choices = unique(cantidad_mapa$anio),
+                                               selected = unique(cantidad_mapa$anio)[1],
+                                               multiple = FALSE),
+                                   plotlyOutput('cantidad_incendios', width = 800, height = 700),
+                                   helpText(h3("Incendios por provincia y causa")),
+                                   dataTableOutput("tabla_cantidad"),
+                                   helpText("*Los datos del año 2020 corresponden únicamente a los meses de septiembre y octubre. 
+                                            No se cuenta con información relativa a las causas de los mismos.")
+                                  
+                          ),
+                          
+                          tabPanel('Superficie afectada',
+                                   selectInput(inputId = "anio2", 
+                                               label = h3("Año:"),
+                                               choices = unique(superficie_mapa$anio),
+                                               selected = unique(superficie_mapa$anio)[1],
+                                               multiple = FALSE),
+                                   plotlyOutput('superficie_incendios', width = 800, height = 700),
+                                   helpText(h3("Incendios por superficie y tipo de vegetación afectada, en hectáreas")),
+                                   dataTableOutput("tabla_superficie"),
+                                   helpText("*Los datos del año 2020 corresponden únicamente a los meses de septiembre y octubre. 
+                                            No se cuenta con información relativa al tipo de vegetación afectada en los mismos.")
+                          )
+             )
+            
+    ),
   
     tabPanel('Cobertura mediática',
              sidebarLayout(
@@ -45,7 +64,7 @@ tabsetPanel(
                  
                  helpText("Análisis de artículos publicados entre el 27 de agosto y el 26 de octubre de 2020."),
                  selectInput('output_medio',
-                             label=h3('Seleccione alcance de los medios'),
+                             label='Seleccione alcance de los medios',
                              choices = unique(data_token$scope_medio)
                  ),
                  
@@ -74,46 +93,90 @@ tabsetPanel(
 )
 
 
+
   
 ############################## SERVER #######################################
   
 server <- function(input,output){
   df_filt_cant <- reactive({
     df_filt_cant <- cantidad_mapa %>% 
-      filter(anio == input$anio)
-  }
+      filter(anio == input$anio1)
+  })
     
-  )
-  
-    output$cantidad_incendios <- renderPlot({
-      ggplot(df_filt_cant(), mapping =  aes(fill = incendio_total_numero))+
+
+    output$cantidad_incendios <- renderPlotly({
+      c <- ggplot(df_filt_cant(), mapping =  aes(fill = incendio_total_numero))+
         geom_sf(data = df_filt_cant()) +
         coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
         theme_void()+
-        scale_fill_viridis_c()
-      
+        scale_fill_viridis(option = "inferno", begin = 0.1, direction = 1)+
+        labs(fill = "Cantidad de incendios")
+      ggplotly(c)
     })
     
     
     df_filt_sup <- reactive({
       df_filt_sup <- superficie_mapa %>% 
-        filter(anio == input$anio)
-    }
+        filter(anio == input$anio2)
+    })
     
-    )
     
-    output$superficie_incendios <- renderPlot({
-      ggplot(df_filt_sup(), mapping =  aes(fill = sup_prop))+
+    
+    output$superficie_incendios <- renderPlotly({
+      s <- ggplot(df_filt_sup(), mapping =  aes(fill = sup_prop))+
         geom_sf(data = df_filt_sup()) +
         coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
         theme_void()+
-        scale_fill_viridis_c()
+        scale_fill_viridis(option = "inferno", begin = 0.1, direction = 1)+
+        labs(fill = "%  de superficie afectada") 
+       ggplotly(s) 
       
-    })    
+    })  
     
     
+    df_filt_cant_tabla <- reactive({
+      df_filt_cant_tabla <- cantidad %>% 
+        filter(anio == input$anio1) 
+    })
     
+    output$tabla_cantidad <- renderDataTable({
+      df_filt_cant_tabla() %>% 
+        select(provincia, incendio_total_numero, incendio_negligencia_numero, 
+               incendio_intencional_numero, incendio_natural_numero, incendio_desconocida_numero) %>% 
+        filter(!incendio_total_numero == 0) %>% 
+        rename("Provincia" = provincia, 
+               "Total de incendios" = incendio_total_numero, 
+               "Negligencia" = incendio_negligencia_numero, 
+               "Intencionales" = incendio_intencional_numero,
+               "Naturales" = incendio_natural_numero,
+               "Desconocida" = incendio_desconocida_numero)
+    })
     
+    df_filt_sup_tabla <- reactive({
+      df_filt_sup_tabla <- superficie %>% 
+        filter(anio == input$anio2) 
+    })
+    
+    output$tabla_superficie <- renderDataTable({
+      df_filt_sup_tabla() %>% 
+        select(provincia, superficie_afectada_por_incendios_total_hectareas,  
+               superficie_afectada_por_incendios_bosque_nativo_hectareas,  
+               superficie_afectada_por_incendios_bosque_cultivado_hectareas,  
+               superficie_afectada_por_incendios_arbustal_hectareas,  
+               superficie_afectada_por_incendios_pastizal_hectareas,  
+               superficie_afectada_por_incendios_sin_determinar_hectareas,
+               sup_prop) %>% 
+        filter(!superficie_afectada_por_incendios_total_hectareas == 0) %>% 
+        rename("Provincia" = provincia, 
+               "Superficie total afectada por incendios (ha)" = superficie_afectada_por_incendios_total_hectareas, 
+               "Bosque nativo" = superficie_afectada_por_incendios_bosque_nativo_hectareas, 
+               "Bosque cultivado" = superficie_afectada_por_incendios_bosque_cultivado_hectareas,
+               "Arbustal" = superficie_afectada_por_incendios_arbustal_hectareas,
+               "Pastizal" = superficie_afectada_por_incendios_pastizal_hectareas,
+               "Sin determinar" = superficie_afectada_por_incendios_sin_determinar_hectareas,
+               "% de superficie afectada" = sup_prop)
+      
+    })  
     token <- reactive({
       token = data_token[data_token$scope_medio==input$output_medio,]
       token
