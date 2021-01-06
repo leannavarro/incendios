@@ -13,6 +13,7 @@ library(data.table)
 library(readxl)
 library(sf)
 library(lubridate)
+library(data.table)
 rm(list = ls())
 options(scipen = 99)
 
@@ -26,9 +27,9 @@ cantidad <- read.csv("cantidad.csv", sep = ";")
 str(cantidad)
 
 cantidad <- cantidad %>%  #uno las columnas con gather para agrupar la data en tidy format
-  gather(key = "incendio_x_tipo",
-         value = "cant_incendios_x_tipo",
-         c(4:7)) %>% 
+  #gather(key = "incendio_x_tipo",
+   #      value = "cant_incendios_x_tipo",
+    #     c(4:7)) %>% 
    rename(anio = incendio_anio) %>% 
   rename(provincia = incendio_provincia) %>% 
   arrange(anio) %>% 
@@ -47,6 +48,8 @@ cantidad$provincia <- gsub(cantidad$provincia , pattern = "córdoba", replacemen
 cantidad$provincia <- gsub(cantidad$provincia , pattern = "neuquén", replacement = "neuquen")
 cantidad$provincia <- gsub(cantidad$provincia , pattern = "santa_fé", replacement = "santa_fe")
 cantidad$provincia <- gsub(cantidad$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "tucumán", replacement = "tucuman")
+
 
 
 unique(cantidad$provincia)
@@ -61,10 +64,10 @@ superficie <- read.csv("superficie.csv", sep = ";")
 
 str(superficie)
 
-superficie <- superficie %>%  #uno las columnas con gather para agrupar la data en tidy format
-  gather(key = "superficie_afectada_tipo",
-         value = "superficie_afectada_ha",
-         c(4:8))
+#superficie <- superficie %>%  #uno las columnas con gather para agrupar la data en tidy format
+ # gather(key = "superficie_afectada_tipo",
+  #       value = "superficie_afectada_ha",
+   #      c(4:8))
 
 superficie <- superficie %>% #renombro la variable
   rename(anio = superficie_afectada_por_incendios_anio) %>% 
@@ -78,8 +81,14 @@ superficie$provincia <- gsub(superficie$provincia , pattern = "córdoba", replac
 superficie$provincia <- gsub(superficie$provincia , pattern = "neuquén", replacement = "neuquen")
 superficie$provincia <- gsub(superficie$provincia , pattern = "santa_fé", replacement = "santa_fe")
 superficie$provincia <- gsub(superficie$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
+superficie$provincia <- gsub(superficie$provincia , pattern = "tucumán", replacement = "tucuman")
+superficie$provincia <- gsub(superficie$provincia , pattern = "tierra_del_fuego,_antártida_e_islas_del_atlántico_sur", replacement = "tierra_del_fuego")
+
+unique(superficie$provincia)
 
 ```
+
+
 ```{r}
 #Incorporamos dataset sobre tamaño de las provincias y  agregamos la columna al dataset de superficie afectada
 
@@ -97,12 +106,18 @@ tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "entre_ríos", r
 tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "córdoba", replacement = "cordoba")
 tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "neuquén", replacement = "neuquen")
 tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "santa_fé", replacement = "santa_fe")
+tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "tucumán", replacement = "tucuman")
 tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
+tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "tierra_del_fuego,_antártida_e_islas_del_atlántico_sur", replacement = "tierra_del_fuego")
 
 tamanio_arg <- tamanio_arg %>% 
   select(!X.U.FEFF.provincia)
 
 superficie <- tamanio_arg %>% left_join(superficie, by = "provincia")
+
+
+unique(tamanio_arg$provincia)
+
 
 superficie <- superficie %>% 
   mutate(ha_km2 = superficie_afectada_por_incendios_total_hectareas/100) %>% 
@@ -116,8 +131,6 @@ superficie <- superficie %>%
 argentina <- st_read("https://raw.githubusercontent.com/aaizemberg/geo-data/gh-pages/ar/provincias_indec_2010.geojson")
 
 
-str(argentina)
-class(argentina)
 
 argentina <- argentina %>% 
   select(provincia, geometry) 
@@ -128,10 +141,6 @@ argentina$provincia <- tolower(argentina$provincia) #paso todo a minúscula
 argentina$provincia <- gsub(argentina$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
 
 
-ggplot()+ #Tiramos un mapa de Arg a ver que onda
-  geom_sf(data = argentina)+
-  coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
-  theme_void()
 
 cantidad_mapa <- argentina %>% left_join(cantidad, by="provincia") %>% 
   drop_na() %>% 
@@ -139,11 +148,18 @@ cantidad_mapa <- argentina %>% left_join(cantidad, by="provincia") %>%
 
 superficie_mapa <- argentina %>% left_join(superficie, by = "provincia") %>% 
   drop_na() %>% 
-  arrange(anio) %>% 
-  select(!c(4,5,6))
+  arrange(anio) 
+  
 
 
 ```
 
 
+```{r}
+unique(superficie_mapa$provincia)
+unique(argentina$provincia)
+unique(superficie$provincia)
+unique(cantidad$provincia)
+
+```
 

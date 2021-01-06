@@ -8,6 +8,9 @@ library(data.table)
 library(readxl)
 library(sf)
 library(wordcloud2)
+library(viridis)
+library(DT)
+
 
 options(scipen = 999)
 
@@ -17,27 +20,28 @@ options(scipen = 999)
 
 ui <- fluidPage(
   theme = shinytheme("cosmo"),
-  titlePanel(title= 'Incendios'),
+  titlePanel(title= 'Análisis de incendios en Argentina'),
   
-tabsetPanel(
-  tabPanel('Mapas',
-           
-           navlistPanel('Análisis Por:',
-                        tabPanel('Cantidad de incendios',
-                                 plotOutput('cantidad_incendios'),
-                        ),
-                        
-                        tabPanel('Superficie afectada',
-                                 plotOutput('superficie_incendios')
-                                 ),
-                        
-                        selectInput(inputId = "anio", 
-                                    label = "Año:",
-                                    choices = unique(cantidad_mapa$anio),
-                                    selected = unique(cantidad_mapa$anio)[1],
-                                    multiple = FALSE)
-           )
-  ),
+  tabsetPanel(
+    tabPanel('Mapas',
+             navlistPanel('Análisis Por',
+                          tabPanel('Cantidad de incendios',
+                                   plotOutput('cantidad_incendios'),
+                                   dataTableOutput("tabla_cantidad")
+                          ),
+                          
+                          tabPanel('Superficie afectada',
+                                   plotOutput('superficie_incendios'),
+                                   dataTableOutput("tabla_superficie")
+                          ),
+                          
+                          selectInput(inputId = "anio", 
+                                      label = h3("Año:"),
+                                      choices = unique(cantidad_mapa$anio),
+                                      selected = unique(cantidad_mapa$anio)[1],
+                                      multiple = FALSE)
+             )
+    ),
   
     tabPanel('Cobertura mediática',
              sidebarLayout(
@@ -45,7 +49,7 @@ tabsetPanel(
                  
                  helpText("Análisis de artículos publicados entre el 27 de agosto y el 26 de octubre de 2020."),
                  selectInput('output_medio',
-                             label=h3('Seleccione alcance de los medios'),
+                             label='Seleccione alcance de los medios',
                              choices = unique(data_token$scope_medio)
                  ),
                  
@@ -74,6 +78,7 @@ tabsetPanel(
 )
 
 
+
   
 ############################## SERVER #######################################
   
@@ -81,16 +86,16 @@ server <- function(input,output){
   df_filt_cant <- reactive({
     df_filt_cant <- cantidad_mapa %>% 
       filter(anio == input$anio)
-  }
+  })
     
-  )
-  
+
     output$cantidad_incendios <- renderPlot({
       ggplot(df_filt_cant(), mapping =  aes(fill = incendio_total_numero))+
         geom_sf(data = df_filt_cant()) +
         coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
         theme_void()+
-        scale_fill_viridis_c()
+        scale_fill_viridis(option = "inferno", direction = 1)+
+        labs(fill = "Incendios anuales")
       
     })
     
@@ -98,22 +103,41 @@ server <- function(input,output){
     df_filt_sup <- reactive({
       df_filt_sup <- superficie_mapa %>% 
         filter(anio == input$anio)
-    }
+    })
     
-    )
+    
     
     output$superficie_incendios <- renderPlot({
       ggplot(df_filt_sup(), mapping =  aes(fill = sup_prop))+
         geom_sf(data = df_filt_sup()) +
         coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
         theme_void()+
-        scale_fill_viridis_c()
+        scale_fill_viridis(option = "inferno", direction = 1)+
+        labs(fill = "Incendios anuales")
+       
       
-    })    
+    })  
     
     
+    df_filt_cant_tabla <- reactive({
+      df_filt_cant_tabla <- cantidad %>% 
+        filter(anio == input$anio) 
+    })
     
+    output$tabla_cantidad <- renderDataTable({
+      df_filt_cant_tabla()
+      
+    })
     
+    df_filt_sup_tabla <- reactive({
+      df_filt_sup_tabla <- superficie %>% 
+        filter(anio == input$anio) 
+    })
+    
+    output$tabla_superficie <- renderDataTable({
+      df_filt_sup_tabla()
+      
+    })  
     token <- reactive({
       token = data_token[data_token$scope_medio==input$output_medio,]
       token
