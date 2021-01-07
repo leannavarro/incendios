@@ -34,7 +34,7 @@ ui <- fluidPage(
                                                choices = unique(cantidad_mapa$anio),
                                                selected = unique(cantidad_mapa$anio)[1],
                                                multiple = FALSE),
-                                   plotlyOutput('cantidad_incendios', width = 800, height = 700),
+                                   plotOutput('cantidad_incendios', width = 800, height = 700),
                                    helpText(h3("Incendios por provincia y causa")),
                                    dataTableOutput("tabla_cantidad"),
                                    helpText("*Los datos del año 2020 corresponden únicamente a los meses de septiembre y octubre. 
@@ -48,7 +48,7 @@ ui <- fluidPage(
                                                choices = unique(superficie_mapa$anio),
                                                selected = unique(superficie_mapa$anio)[1],
                                                multiple = FALSE),
-                                   plotlyOutput('superficie_incendios', width = 800, height = 700),
+                                   plotOutput('superficie_incendios', width = 800, height = 700),
                                    helpText(h3("Incendios por superficie y tipo de vegetación afectada, en hectáreas")),
                                    dataTableOutput("tabla_superficie"),
                                    helpText("*Los datos del año 2020 corresponden únicamente a los meses de septiembre y octubre. 
@@ -104,14 +104,14 @@ server <- function(input,output){
   })
   
   
-  output$cantidad_incendios <- renderPlotly({
-    c <- ggplot(df_filt_cant(), mapping =  aes(fill = incendio_total_numero))+
+  output$cantidad_incendios <- renderPlot({
+    ggplot(df_filt_cant(), mapping =  aes(fill = incendio_total_numero))+
       geom_sf(data = df_filt_cant()) +
       coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
       theme_void()+
       scale_fill_viridis(option = "inferno", begin = 0.1, direction = 1)+
       labs(fill = "Cantidad de incendios")
-    ggplotly(c)
+    
   })
   
   
@@ -122,14 +122,14 @@ server <- function(input,output){
   
   
   
-  output$superficie_incendios <- renderPlotly({
-    s <- ggplot(df_filt_sup(), mapping =  aes(fill = sup_prop))+
+  output$superficie_incendios <- renderPlot({
+   ggplot(df_filt_sup(), mapping =  aes(fill = sup_prop))+
       geom_sf(data = df_filt_sup()) +
       coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
       theme_void()+
       scale_fill_viridis(option = "inferno", begin = 0.1, direction = 1)+
       labs(fill = "%  de superficie afectada") 
-    ggplotly(s) 
+
     
   })  
   
