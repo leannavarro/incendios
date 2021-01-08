@@ -106,6 +106,7 @@ superficie_afectada_por_incendios_anio;superficie_afectada_por_incendios_provinc
 1997;Neuquén;17280;40;2;391;16847;0
 1997;Río Negro;10482;5154;418;262;4648;0
 1997;Salta;40185;23694;1253;7377;7861;0
+1996;San Juan;0;0;0;0;0;0
 1997;San Juan;439;0;13;32;395;0
 1997;San Luis;6436;2112;0;2282;2042;0
 1997;Santa Cruz;21381;0;9;6003;15369;0
@@ -157,6 +158,7 @@ superficie_afectada_por_incendios_anio;superficie_afectada_por_incendios_provinc
 1999;Santa Fe;364;44;1;10;309;0
 1999;Santiago del Estero;1200;300;0;400;500;0
 1999;Tierra del Fuego;214;89;0;0;125;0
+1998;Tucumán;0;0;0;0;0;0
 1999;Tucumán;2818;0;10;5;2803;0
 2000;Buenos Aires;17927;1116;399;1902;14511;0
 2000;Catamarca;77233;27000;4;26034;24195;0
@@ -294,6 +296,7 @@ superficie_afectada_por_incendios_anio;superficie_afectada_por_incendios_provinc
 2005;Río Negro;303279;92277;388;96019;114595;0
 2005;Salta;61778;10876;3330;17414;30158;0
 2005;San Juan;996;0;4;230;762;0
+2004;San Luis;0;0;0;0;0;0
 2005;San Luis;22562;22314;0;0;248;0
 2005;Santa Cruz;9398;57;36;2011;7295;0
 2005;Santa Fe;1911;15;177;114;1605;0
@@ -487,6 +490,8 @@ superficie_afectada_por_incendios_anio;superficie_afectada_por_incendios_provinc
 2013;Santa Fe;2478;132;86;86;2174;0
 2013;Santiago del Estero;6062;3270;0;0;2792;0
 2013;Tierra del Fuego;10;3;0;1;6;0
+2010;Tucumán;0;0;0;0;0;0
+2011;Tucumán;0;0;0;0;0;0
 2013;Tucumán;6429;104;0;0;6325;0
 2014;Buenos Aires;66104;4882;533;1500;59189;0
 2014;Catamarca;10367;3;8;1097;9258;0
@@ -564,7 +569,7 @@ superficie_afectada_por_incendios_anio;superficie_afectada_por_incendios_provinc
 2017;Catamarca;45170;1;391;814;43965;0
 2017;Chaco;4924;1243;167;323;3191;0
 2017;Chubut;521;187;17;186;131;0
-2017;Ciudad Autónoma de Bs As;0;0;0;0;0;0
+2017;Ciudad Autónoma de Buenos Aires;0;0;0;0;0;0
 2017;Córdoba;45343;11922;410;3922;29089;0
 2017;Corrientes;2388;256;1250;0;883;0
 2017;Entre Ríos;372;47;3;102;220;0
@@ -585,64 +590,77 @@ superficie_afectada_por_incendios_anio;superficie_afectada_por_incendios_provinc
 2017;Tierra del Fuego;5;2;2;1;1;0
 2017;Tucumán;178;21;0;92;65;0
 2018;Buenos Aires;86852;2419;508;40953;42971;0
+2019;Buenos Aires;0;0;0;0;0;0
 2018;Catamarca;6993;71;94;1706;5122;0
-2018;Chaco;3067;79;1047;230;1712;0
-2018;Chubut;100;2;12;12;74;0
-2018;Ciudad Autónoma de Buenos Aires;0;0;0;0;0;0
-2018;Córdoba;20826;2549;300;3935;14043;0
-2018;Corrientes;434;49;75;5;306;0
-2018;Entre Ríos;4899;3369;1245;0;285;0
-2018;Formosa;551;0;0;168;383;0
-2018;Jujuy;842;134;41;102;564;0
-2018;La Pampa;723262;228360;21487;313726;159689;0
-2018;La Rioja;303;0;0;1;302;0
-2018;Mendoza;126316;8672;71;34988;82584;0
-2018;Misiones;766;0;8;22;736;0
-2018;Neuquén;2826;1046;14;565;1201;0
-2018;Parques Nacionales;33281;72;30;15095;18085;0
-2018;Río Negro;4688;69;16;2267;2336;0
-2018;Salta;1306;0;0;223;1083;0
-2018;San Juan;566;11;5;0;551;0
-2018;San Luis;39;0;0;0;39;0
-2018;Santa Fe;1686;116;55;64;1451;0
-2018;Tierra del Fuego;3;0;0;0;2;0
-2018;Tucumán;1802;0;0;60;1742;0
 2019;Catamarca;399;50;2;102;246;0
+2018;Chaco;3067;79;1047;230;1712;0
+2019;Chaco;0;0;0;0;0;0
+2018;Chubut;100;2;12;12;74;0
 2019;Chubut;4254;10;4073;163;7;0
+2018;Ciudad Autónoma de Buenos Aires;0;0;0;0;0;0
 2019;Ciudad Autónoma de Buenos Aires;0;0;0;0;0;0
+2018;Córdoba;20826;2549;300;3935;14043;0
 2019;Córdoba;4298;671;0;4;3623;0
+2018;Corrientes;434;49;75;5;306;0
 2019;Corrientes;14;0;2;0;11;0
+2018;Entre Ríos;4899;3369;1245;0;285;0
 2019;Entre Ríos;246;0;42;1;203;0
+2018;Formosa;551;0;0;168;383;0
 2019;Formosa;1577;0;0;247;1330;0
+2018;Jujuy;842;134;41;102;564;0
 2019;Jujuy;190;31;0;2;157;0
+2018;La Pampa;723262;228360;21487;313726;159689;0
 2019;La Pampa;115692;48998;0;53220;13474;0
-2019;La Rioja;34;0;0;0;34;0
-2019;Mendoza;33296;2057;0;10037;21202;0
-2019;Misiones;53;0;3;0;50;0
-2019;Parques Nacionales;2378;65;0;22;2292;0
-2019;Río Negro;278;66;7;64;141;0
-2019;Santa Fe;540;23;8;32;477;0
-2019;Tierra del Fuego;2;0;0;0;2;0
-2020;Catamarca;10039;0;0;0;0;0
-2020;Chubut;72;0;0;0;0;0
-2020;Ciudad Autónoma de Buenos Aires;0;0;0;0;0;0
-2020;Córdoba;276990;0;0;0;0;0
-2020;Corrientes;4721;0;0;0;0;0
-2020;Entre Ríos;97543;0;0;0;0;0
-2020;Formosa;5000;0;0;0;0;0
-2020;Jujuy;31490;0;0;0;0;0
-2020;La Pampa;2000;0;0;0;0;0
-2020;La Rioja;168;0;0;0;0;0
-2020;Mendoza;3903;0;0;0;0;0
-2020;Misiones;408;0;0;0;0;0
-2020;Parques Nacionales;0;0;0;0;0;0
-2020;Río Negro;580;0;0;0;0;0
-2020;Santa Fe;10608;0;0;0;0;0
-2020;Tierra del Fuego;0;0;0;0;0;0
-2020;San Luis;33300;0;0;0;0;0
-2020;Salta;49323;0;0;0;0;0
-2020;Chaco;4357;0;0;0;0;0
-2020;Santiago del Estero;4236;0;0;0;0;0
-2020;Tucumán;4612;0;0;0;0;0
+2018;La Rioja;303;0;0;1;302;0
 2020;Buenos Aires;300;0;0;0;0;0
+2019;La Rioja;34;0;0;0;34;0
+2018;Mendoza;126316;8672;71;34988;82584;0
+2020;Catamarca;10039;0;0;0;0;0
+2020;Chaco;4357;0;0;0;0;0
+2019;Mendoza;33296;2057;0;10037;21202;0
+2018;Misiones;766;0;8;22;736;0
+2020;Chubut;72;0;0;0;0;0
+2019;Misiones;53;0;3;0;50;0
+2020;Ciudad Autónoma de Buenos Aires;0;0;0;0;0;0
+2018;Neuquén;2826;1046;14;565;1201;0
+2020;Córdoba;276990;0;0;0;0;0
+2019;Neuquén;0;0;0;0;0;0
+2020;Corrientes;4721;0;0;0;0;0
+2018;Parques Nacionales;33281;72;30;15095;18085;0
+2020;Entre Ríos;97543;0;0;0;0;0
+2019;Parques Nacionales;2378;65;0;22;2292;0
+2020;Formosa;5000;0;0;0;0;0
+2018;Río Negro;4688;69;16;2267;2336;0
+2020;Jujuy;31490;0;0;0;0;0
+2019;Río Negro;278;66;7;64;141;0
+2020;La Pampa;2000;0;0;0;0;0
+2018;Salta;1306;0;0;223;1083;0
+2020;La Rioja;168;0;0;0;0;0
+2019;Salta;0;0;0;0;0;0
+2020;Mendoza;3903;0;0;0;0;0
+2018;San Juan;566;11;5;0;551;0
+2020;Misiones;408;0;0;0;0;0
+2019;San Juan;0;0;0;0;0;0
+2020;Neuquén;0;0;0;0;0;0
+2018;San Luis;39;0;0;0;39;0
+2020;Parques Nacionales;0;0;0;0;0;0
+2019;San Luis;0;0;0;0;0;0
+2020;Río Negro;580;0;0;0;0;0
+2020;Salta;49323;0;0;0;0;0
+2019;Santa Cruz;0;0;0;0;0;0
+2018;Santa Cruz;0;0;0;0;0;0
+2020;San Juan;0;0;0;0;0;0
+2020;San Luis;33300;0;0;0;0;0
+2018;Santa Fe;1686;116;55;64;1451;0
 2020;Santa Cruz;300;0;0;0;0;0
+2019;Santa Fe;540;23;8;32;477;0
+2018;Santiago del Estero;0;0;0;0;0;0
+2020;Santa Fe;10608;0;0;0;0;0
+2019;Santiago del Estero;0;0;0;0;0;0
+2020;Santiago del Estero;4236;0;0;0;0;0
+2018;Tierra del Fuego;3;0;0;0;2;0
+2019;Tierra del Fuego;2;0;0;0;2;0
+2018;Tucumán;1802;0;0;60;1742;0
+2020;Tierra del Fuego;0;0;0;0;0;0
+2020;Tucumán;4612;0;0;0;0;0
+2019;Tucumán;0;0;0;0;0;0

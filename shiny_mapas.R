@@ -10,6 +10,7 @@ library(sf)
 library(wordcloud2)
 library(viridis)
 library(DT)
+library(scales)
 
 
 options(scipen = 999)
@@ -110,7 +111,7 @@ server <- function(input,output){
       coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
       theme_void()+
       scale_fill_viridis(option = "inferno", begin = 0.1, direction = 1)+
-      labs(fill = "Cantidad de incendios")
+      labs(fill = "Cantidad de incendios", caption = "Fuente: Dirección Nacional de Desarrollo Foresto Industrial")
     
   })
   
@@ -125,10 +126,11 @@ server <- function(input,output){
   output$superficie_incendios <- renderPlot({
    ggplot(df_filt_sup(), mapping =  aes(fill = sup_prop))+
       geom_sf(data = df_filt_sup()) +
-      coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
+      coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+
+      scale_y_continuous(labels=scales::percent) +# sacamos la antartida que deforma el mapa
       theme_void()+
       scale_fill_viridis(option = "inferno", begin = 0.1, direction = 1)+
-      labs(fill = "%  de superficie afectada") 
+      labs(fill = "%  de superficie afectada", caption = "Fuente: Dirección Nacional de Desarrollo Foresto Industrial") 
 
     
   })  
