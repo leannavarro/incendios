@@ -145,13 +145,17 @@ server <- function(input,output){
     df_filt_cant_tabla() %>% 
       select(provincia, incendio_total_numero, incendio_negligencia_numero, 
              incendio_intencional_numero, incendio_natural_numero, incendio_desconocida_numero) %>% 
-      filter(!incendio_total_numero == 0) %>% 
+      filter(!incendio_total_numero == 0) %>%
+      mutate(provincia =  str_replace_all(provincia, "_", " "))%>%
+      mutate(provincia = str_to_title(provincia)) %>%
+      mutate(provincia =  str_replace_all(provincia, "Del", "del"))%>%
       rename("Provincia" = provincia, 
              "Total de incendios" = incendio_total_numero, 
              "Negligencia" = incendio_negligencia_numero, 
              "Intencionales" = incendio_intencional_numero,
              "Naturales" = incendio_natural_numero,
              "Desconocida" = incendio_desconocida_numero)
+    
   })
   
   df_filt_sup_tabla <- reactive({
@@ -168,7 +172,10 @@ server <- function(input,output){
              superficie_afectada_por_incendios_pastizal_hectareas,  
              superficie_afectada_por_incendios_sin_determinar_hectareas,
              sup_prop) %>% 
-      filter(!superficie_afectada_por_incendios_total_hectareas == 0) %>% 
+      filter(!superficie_afectada_por_incendios_total_hectareas == 0) %>%
+      mutate(provincia =  str_replace_all(provincia, "_", " "))%>%
+      mutate(provincia = str_to_title(provincia)) %>%
+      mutate(provincia =  str_replace_all(provincia, "Del", "del"))%>%
       rename("Provincia" = provincia, 
              "Superficie total afectada por incendios (ha)" = superficie_afectada_por_incendios_total_hectareas, 
              "Bosque nativo" = superficie_afectada_por_incendios_bosque_nativo_hectareas, 

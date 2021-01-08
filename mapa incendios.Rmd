@@ -119,6 +119,7 @@ superficie <- tamanio_arg %>% left_join(superficie, by = "provincia")
 unique(tamanio_arg$provincia)
 
 
+
 superficie <- superficie %>% 
   mutate(ha_km2 = superficie_afectada_por_incendios_total_hectareas/100) %>% 
   mutate(sup_prop = round((ha_km2/km2)*100,2)) #Creamos la variable sup_prop para normalizar la prop de Ha afectadas, redondeamos a 2 decimales
