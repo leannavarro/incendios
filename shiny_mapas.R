@@ -149,6 +149,10 @@ server <- function(input,output){
       mutate(provincia =  str_replace_all(provincia, "_", " "))%>%
       mutate(provincia = str_to_title(provincia)) %>%
       mutate(provincia =  str_replace_all(provincia, "Del", "del"))%>%
+      mutate(provincia =  str_replace_all(provincia, "Cordoba", "Córdoba"))%>%
+      mutate(provincia =  str_replace_all(provincia, "Rio", "Río"))%>%
+      mutate(provincia =  str_replace_all(provincia, "Neuquen", "Neuquén"))%>%
+      mutate(provincia =  str_replace_all(provincia, "Tucuman", "Tucumán"))%>%
       rename("Provincia" = provincia, 
              "Total de incendios" = incendio_total_numero, 
              "Negligencia" = incendio_negligencia_numero, 
@@ -176,6 +180,10 @@ server <- function(input,output){
       mutate(provincia =  str_replace_all(provincia, "_", " "))%>%
       mutate(provincia = str_to_title(provincia)) %>%
       mutate(provincia =  str_replace_all(provincia, "Del", "del"))%>%
+      mutate(provincia =  str_replace_all(provincia, "Cordoba", "Córdoba"))%>%
+      mutate(provincia =  str_replace_all(provincia, "Rio", "Río"))%>%
+      mutate(provincia =  str_replace_all(provincia, "Neuquen", "Neuquén"))%>%
+      mutate(provincia =  str_replace_all(provincia, "Tucuman", "Tucumán"))%>%
       rename("Provincia" = provincia, 
              "Superficie total afectada por incendios (ha)" = superficie_afectada_por_incendios_total_hectareas, 
              "Bosque nativo" = superficie_afectada_por_incendios_bosque_nativo_hectareas, 
