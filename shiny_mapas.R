@@ -129,7 +129,7 @@ server <- function(input,output){
       coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+
       scale_y_continuous(labels=scales::percent) +# sacamos la antartida que deforma el mapa
       theme_void()+
-      scale_fill_viridis(option = "magma", begin = 0.1, direction = 1)+
+      scale_fill_viridis(option = "inferno", begin = 0.1, direction = 1)+
       labs(fill = "%  de superficie afectada", caption = "Fuente: Dirección Nacional de Desarrollo Foresto Industrial") 
 
     
