@@ -36,6 +36,7 @@ ui <- fluidPage(
                                                selected = unique(cantidad_mapa$anio)[1],
                                                multiple = FALSE),
                                    plotOutput('cantidad_incendios', width = 800, height = 700),
+                                   br()
                                    helpText(h3("Incendios por provincia y causa")),
                                    dataTableOutput("tabla_cantidad"),
                                    helpText("*Los datos del año 2020 corresponden únicamente a los meses de septiembre y octubre. 
@@ -50,6 +51,7 @@ ui <- fluidPage(
                                                selected = unique(superficie_mapa$anio)[1],
                                                multiple = FALSE),
                                    plotOutput('superficie_incendios', width = 800, height = 700),
+                                   br()
                                    helpText(h3("Incendios por superficie y tipo de vegetación afectada, en hectáreas")),
                                    dataTableOutput("tabla_superficie"),
                                    helpText("*Los datos del año 2020 corresponden únicamente a los meses de septiembre y octubre. 
