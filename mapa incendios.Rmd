@@ -8,13 +8,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+rm(list = ls())
 library(tidyverse)
-library(data.table)
 library(readxl)
 library(sf)
 library(lubridate)
 library(data.table)
-rm(list = ls())
 options(scipen = 99)
 
 ```
