@@ -8,16 +8,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-<<<<<<< HEAD
-library(rsconnect)
-=======
-rm(list = ls())
->>>>>>> 40dadcbdd74e188d9238fd48cba0baa063d67412
 library(tidyverse)
+library(data.table)
 library(readxl)
 library(sf)
 library(lubridate)
 library(data.table)
+rm(list = ls())
 options(scipen = 99)
 
 ```
