@@ -146,7 +146,6 @@ unique(argentina$provincia)
 argentina$provincia <- tolower(argentina$provincia) #paso todo a minúscula
 argentina$provincia <- gsub(argentina$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
 
-st_crs(argentina) = 4326
 
 cantidad_mapa <- argentina %>% left_join(cantidad, by="provincia") %>% 
   drop_na() %>% 
