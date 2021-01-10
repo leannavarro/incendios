@@ -40,19 +40,7 @@ cantidad <- cantidad %>%  #uno las columnas con gather para agrupar la data en t
   #rename(anio = incendio_anio) %>% 
  # rename(provincia = incendio_provincia)
 
-cantidad$provincia <- tolower(cantidad$provincia) #paso todo a minúscula
-cantidad$provincia <- gsub(cantidad$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
-cantidad$provincia <- gsub(cantidad$provincia , pattern = "río_negro", replacement = "rio_negro")
-cantidad$provincia <- gsub(cantidad$provincia , pattern = "entre_ríos", replacement = "entre_rios")
-cantidad$provincia <- gsub(cantidad$provincia , pattern = "córdoba", replacement = "cordoba")
-cantidad$provincia <- gsub(cantidad$provincia , pattern = "neuquén", replacement = "neuquen")
-cantidad$provincia <- gsub(cantidad$provincia , pattern = "santa_fé", replacement = "santa_fe")
-cantidad$provincia <- gsub(cantidad$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
-cantidad$provincia <- gsub(cantidad$provincia , pattern = "tucumán", replacement = "tucuman")
 
-
-
-unique(cantidad$provincia)
 
 ```
 
@@ -73,18 +61,7 @@ superficie <- superficie %>% #renombro la variable
   rename(anio = superficie_afectada_por_incendios_anio) %>% 
   rename(provincia = superficie_afectada_por_incendios_provincia)
 
-superficie$provincia <- tolower(superficie$provincia) #paso todo a minúscula
-superficie$provincia <- gsub(superficie$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
-superficie$provincia <- gsub(superficie$provincia , pattern = "río_negro", replacement = "rio_negro")
-superficie$provincia <- gsub(superficie$provincia , pattern = "entre_ríos", replacement = "entre_rios")
-superficie$provincia <- gsub(superficie$provincia , pattern = "córdoba", replacement = "cordoba")
-superficie$provincia <- gsub(superficie$provincia , pattern = "neuquén", replacement = "neuquen")
-superficie$provincia <- gsub(superficie$provincia , pattern = "santa_fé", replacement = "santa_fe")
-superficie$provincia <- gsub(superficie$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
-superficie$provincia <- gsub(superficie$provincia , pattern = "tucumán", replacement = "tucuman")
-superficie$provincia <- gsub(superficie$provincia , pattern = "tierra_del_fuego,_antártida_e_islas_del_atlántico_sur", replacement = "tierra_del_fuego")
 
-unique(superficie$provincia)
 
 ```
 
@@ -96,6 +73,60 @@ unique(superficie$provincia)
 tamanio_arg <- read.csv("tamanio_provincias.csv", sep = ";", encoding = "UTF-8")
 
 str(tamanio_arg)
+
+
+tamanio_arg <- tamanio_arg %>% 
+  select(!X.U.FEFF.provincia)
+
+tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "Tierra del Fuego, Antártida e Islas del Atlántico Sur", replacement = "Tierra del Fuego")
+
+superficie <- tamanio_arg %>% left_join(superficie, by = "provincia")
+
+superficie <- superficie %>% 
+  mutate(ha_km2 = superficie_afectada_por_incendios_total_hectareas/100) %>% 
+  mutate(sup_prop = round((ha_km2/km2)*100,2)) #Creamos la variable sup_prop para normalizar la prop de Ha afectadas, redondeamos a 2 decimales
+
+max(superficie$sup_prop) #vemos si hay algún valor extraño (muy alto)
+superficie %>% filter(sup_prop == 63.15) #corresponde a caba por lo que se trata de un error en los datos así que lo eliminamos
+superficie <-superficie %>% filter(!sup_prop == 63.15)
+
+
+#Renombramos variables para poder graficar luego con Highcharter
+cantidad <- rename(cantidad, name = provincia)
+cantidad <- rename(cantidad, incendios = incendio_total_numero)
+
+superficie <- rename(superficie, name = provincia)
+
+
+```
+
+
+A continuación se muestra el código utilizado originalmente para graficar los mapas con el paquete SF. Cuando subimos la app a Shiny nos tiraba error, aparentemente porque no se puede usar en una cuenta gratis, por lo que tuvimos que mudar todo a Highcharter.
+
+
+```{r}
+cantidad$provincia <- tolower(cantidad$provincia) #paso todo a minúscula
+cantidad$provincia <- gsub(cantidad$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "río_negro", replacement = "rio_negro")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "entre_ríos", replacement = "entre_rios")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "córdoba", replacement = "cordoba")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "neuquén", replacement = "neuquen")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "santa_fé", replacement = "santa_fe")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
+cantidad$provincia <- gsub(cantidad$provincia , pattern = "tucumán", replacement = "tucuman")
+
+
+
+superficie$provincia <- tolower(superficie$provincia) #paso todo a minúscula
+superficie$provincia <- gsub(superficie$provincia , pattern = " ", replacement = "_") #reemplazo espacios por _
+superficie$provincia <- gsub(superficie$provincia , pattern = "río_negro", replacement = "rio_negro")
+superficie$provincia <- gsub(superficie$provincia , pattern = "entre_ríos", replacement = "entre_rios")
+superficie$provincia <- gsub(superficie$provincia , pattern = "córdoba", replacement = "cordoba")
+superficie$provincia <- gsub(superficie$provincia , pattern = "neuquén", replacement = "neuquen")
+superficie$provincia <- gsub(superficie$provincia , pattern = "santa_fé", replacement = "santa_fe")
+superficie$provincia <- gsub(superficie$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
+superficie$provincia <- gsub(superficie$provincia , pattern = "tucumán", replacement = "tucuman")
+superficie$provincia <- gsub(superficie$provincia , pattern = "tierra_del_fuego,_antártida_e_islas_del_atlántico_sur", replacement = "tierra_del_fuego")
 
 tamanio_arg$provincia <- tamanio_arg$X.U.FEFF.provincia
 
@@ -110,26 +141,7 @@ tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "tucumán", repl
 tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "ciudad_autónoma_de_buenos_aires", replacement = "caba")
 tamanio_arg$provincia <- gsub(tamanio_arg$provincia , pattern = "tierra_del_fuego,_antártida_e_islas_del_atlántico_sur", replacement = "tierra_del_fuego")
 
-tamanio_arg <- tamanio_arg %>% 
-  select(!X.U.FEFF.provincia)
-
-superficie <- tamanio_arg %>% left_join(superficie, by = "provincia")
-
-
-unique(tamanio_arg$provincia)
-
-
-
-superficie <- superficie %>% 
-  mutate(ha_km2 = superficie_afectada_por_incendios_total_hectareas/100) %>% 
-  mutate(sup_prop = round((ha_km2/km2)*100,2)) #Creamos la variable sup_prop para normalizar la prop de Ha afectadas, redondeamos a 2 decimales
-
-max(superficie$sup_prop) #vemos si hay algún valor extraño (muy alto)
-superficie %>% filter(sup_prop == 63.15) #corresponde a caba por lo que se trata de un error en los datos así que lo eliminamos
-superficie <-superficie %>% filter(!sup_prop == 63.15)
-
 ```
-
 
 ```{r}
 # Mapa de argentina
@@ -155,16 +167,12 @@ superficie_mapa <- argentina %>% left_join(superficie, by = "provincia") %>%
   drop_na() %>% 
   arrange(anio) 
   
-
-
-```
-
-
-```{r}
 unique(superficie_mapa$provincia)
 unique(argentina$provincia)
 unique(superficie$provincia)
 unique(cantidad$provincia)
+unique(tamanio_arg$provincia)
 
 ```
 
+```
