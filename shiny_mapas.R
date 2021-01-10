@@ -27,15 +27,13 @@ ui <- fluidPage(
     tabPanel('Mapas',
              navlistPanel('Análisis Por',
                           
-                          
-                          
                           tabPanel('Cantidad de incendios',
                                    selectInput(inputId = "anio1", 
                                                label = h3("Año:"),
-                                               choices = unique(cantidad_mapa$anio),
-                                               selected = unique(cantidad_mapa$anio)[1],
+                                               choices = unique(cantidad$anio),
+                                               selected = unique(cantidad$anio)[1],
                                                multiple = FALSE),
-                                   plotOutput('cantidad_incendios', width = 800, height = 700),
+                                   highchartOutput('mapa_cantidad', width = 800, height = 700),
                                    br(),
                                    helpText(h3("Incendios por provincia y causa")),
                                    dataTableOutput("tabla_cantidad"),
@@ -50,7 +48,7 @@ ui <- fluidPage(
                                                choices = unique(superficie_mapa$anio),
                                                selected = unique(superficie_mapa$anio)[1],
                                                multiple = FALSE),
-                                   plotOutput('superficie_incendios', width = 800, height = 700),
+                                   highchartOutput('mapa_superficie', width = 800, height = 700),
                                    br(),
                                    helpText(h3("Incendios por superficie y tipo de vegetación afectada, en hectáreas")),
                                    dataTableOutput("tabla_superficie"),
@@ -101,63 +99,75 @@ ui <- fluidPage(
 ############################## SERVER #######################################
 
 server <- function(input,output){
+  
   df_filt_cant <- reactive({
-    df_filt_cant <- cantidad_mapa %>% 
+    df_filt_cant = cantidad %>% 
       filter(anio == input$anio1)
   })
   
   
-  output$cantidad_incendios <- renderPlot({
-    ggplot(df_filt_cant(), mapping =  aes(fill = incendio_total_numero))+
-      geom_sf(data = df_filt_cant()) +
-      coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+ # sacamos la antartida que deforma el mapa
-      theme_void()+
-      scale_fill_viridis(option = "inferno", begin = 0.1, direction = 1)+
-      labs(fill = "Cantidad de incendios", caption = "Fuente: Dirección Nacional de Desarrollo Foresto Industrial")
+  output$mapa_cantidad <- renderHighchart({
     
+    df_filt_cant() %>% hcmap(map = "countries/ar/ar-all",
+                             joinBy = "name",
+                             value = "incendios",
+                             name = "Incendios",
+                             download_map_data = T,
+                             borderColor = "White",
+                             borderWidth = 0.3) %>% 
+      hc_legend(title = list(text = "Cantidad de incendios")) %>% 
+      hc_title(text = "Cantidad de incendios anuales", style = list(color = "Purple", 
+                                                           fontSize = 22, 
+                                                           fontFamily = "Tahoma",
+                                                           fontWeight = "bold")) %>%
+      hc_colorAxis(stops = color_stops(colors = viridisLite::inferno(10, 
+                                                               begin = 0.2,
+                                                               end = 1,
+                                                               direction = 1))) %>% 
+      hc_add_theme(hc_theme_elementary()) %>% 
+      hc_credits(enabled = F) %>% 
+      hc_caption(text = "Fuente: Dirección Nacional de Desarrollo Foresto Industrial", align = "right")
   })
   
   
   df_filt_sup <- reactive({
-    df_filt_sup <- superficie_mapa %>% 
+    df_filt_sup <- superficie %>% 
       filter(anio == input$anio2)
   })
   
-  
-  
-  output$superficie_incendios <- renderPlot({
-   ggplot(df_filt_sup(), mapping =  aes(fill = sup_prop))+
-      geom_sf(data = df_filt_sup()) +
-      coord_sf(xlim = c(-74, -52), ylim = c(-56, -20))+
-      scale_y_continuous(labels=scales::percent) +# sacamos la antartida que deforma el mapa
-      theme_void()+
-      scale_fill_viridis(option = "inferno", begin = 0.1, direction = 1)+
-      labs(fill = "%  de superficie afectada", caption = "Fuente: Dirección Nacional de Desarrollo Foresto Industrial") 
-
+  output$mapa_superficie<- renderHighchart({
     
-  })  
-  
-  
-  df_filt_cant_tabla <- reactive({
-    df_filt_cant_tabla <- cantidad %>% 
-      filter(anio == input$anio1) 
+    df_filt_sup() %>% hcmap(map = "countries/ar/ar-all", 
+                            joinBy = "name", 
+                            value = "sup_prop",
+                            name = "Superficie afectada",
+                            download_map_data = T,
+                            borderColor = "White",
+                            borderWidth = 0.3,
+                            tooltip = list(valueSuffix = " %")) %>% 
+      hc_legend(title = list(text = "Porcentaje de superficie afectada")) %>% 
+      hc_title(text = "Superficie afectada por incendios", style = list(color = "Purple", 
+                                                                    fontSize = 22, 
+                                                                    fontFamily = "Tahoma",
+                                                                    fontWeight = "bold")) %>% 
+      hc_colorAxis(stops = color_stops(colors = viridisLite::inferno(10, 
+                                                                     begin = 0.2,
+                                                                     end = 1,
+                                                                     direction = 1))) %>% 
+      hc_add_theme(hc_theme_elementary()) %>% 
+      hc_credits(enabled = F) %>% 
+      hc_caption(text = "Fuente: Dirección Nacional de Desarrollo Foresto Industrial", align = "right")
   })
   
+  
+  
   output$tabla_cantidad <- renderDataTable({
-    df_filt_cant_tabla() %>% 
-      select(provincia, incendio_total_numero, incendio_negligencia_numero, 
+    df_filt_cant() %>% 
+      select(name, incendios, incendio_negligencia_numero, 
              incendio_intencional_numero, incendio_natural_numero, incendio_desconocida_numero) %>% 
-      filter(!incendio_total_numero == 0) %>%
-      mutate(provincia =  str_replace_all(provincia, "_", " "))%>%
-      mutate(provincia = str_to_title(provincia)) %>%
-      mutate(provincia =  str_replace_all(provincia, "Del", "del"))%>%
-      mutate(provincia =  str_replace_all(provincia, "Caba", "Ciudad Autónoma de Buenos Aires"))%>%
-      mutate(provincia =  str_replace_all(provincia, "Cordoba", "Córdoba"))%>%
-      mutate(provincia =  str_replace_all(provincia, "Rio", "Río"))%>%
-      mutate(provincia =  str_replace_all(provincia, "Neuquen", "Neuquén"))%>%
-      mutate(provincia =  str_replace_all(provincia, "Tucuman", "Tucuman"))%>%
-      rename("Provincia" = provincia, 
-             "Total de incendios" = incendio_total_numero, 
+      filter(!incendios == 0) %>%
+      rename("Provincia" = name, 
+             "Total de incendios" = incendios, 
              "Negligencia" = incendio_negligencia_numero, 
              "Intencionales" = incendio_intencional_numero,
              "Naturales" = incendio_natural_numero,
@@ -165,14 +175,11 @@ server <- function(input,output){
     
   })
   
-  df_filt_sup_tabla <- reactive({
-    df_filt_sup_tabla <- superficie %>% 
-      filter(anio == input$anio2) 
-  })
+ 
   
   output$tabla_superficie <- renderDataTable({
-    df_filt_sup_tabla() %>% 
-      select(provincia, superficie_afectada_por_incendios_total_hectareas,  
+    df_filt_sup() %>% 
+      select(name, superficie_afectada_por_incendios_total_hectareas,  
              superficie_afectada_por_incendios_bosque_nativo_hectareas,  
              superficie_afectada_por_incendios_bosque_cultivado_hectareas,  
              superficie_afectada_por_incendios_arbustal_hectareas,  
@@ -180,15 +187,7 @@ server <- function(input,output){
              superficie_afectada_por_incendios_sin_determinar_hectareas,
              sup_prop) %>% 
       filter(!superficie_afectada_por_incendios_total_hectareas == 0) %>%
-      mutate(provincia =  str_replace_all(provincia, "_", " "))%>%
-      mutate(provincia = str_to_title(provincia)) %>%
-      mutate(provincia =  str_replace_all(provincia, "Del", "del"))%>%
-      mutate(provincia =  str_replace_all(provincia, "Caba", "Ciudad Autónoma de Buenos Aires"))%>%
-      mutate(provincia =  str_replace_all(provincia, "Cordoba", "Córdoba"))%>%
-      mutate(provincia =  str_replace_all(provincia, "Rio", "Río"))%>%
-      mutate(provincia =  str_replace_all(provincia, "Neuquen", "Neuquén"))%>%
-      mutate(provincia =  str_replace_all(provincia, "Tucuman", "Tucuman"))%>%
-      rename("Provincia" = provincia, 
+      rename("Provincia" = name, 
              "Superficie total afectada por incendios (ha)" = superficie_afectada_por_incendios_total_hectareas, 
              "Bosque nativo" = superficie_afectada_por_incendios_bosque_nativo_hectareas, 
              "Bosque cultivado" = superficie_afectada_por_incendios_bosque_cultivado_hectareas,
