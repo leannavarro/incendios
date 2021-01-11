@@ -6,11 +6,11 @@ library(highcharter)
 library(tidyverse)
 library(data.table)
 library(readxl)
-library(sf)
 library(wordcloud2)
 library(viridis)
 library(DT)
 library(scales)
+library(png)
 
 
 options(scipen = 999)
@@ -21,7 +21,13 @@ options(scipen = 999)
 
 ui <- fluidPage(
   theme = shinytheme("cosmo"),
-  titlePanel(title= 'Análisis de incendios en Argentina'),
+  fluidRow(
+    column(9,titlePanel(title= h1('Análisis de incendios en Argentina'))),
+    br(),
+  column(1,tags$a(imageOutput("logoGithub", width = 50, height = 50),
+                   href="https://github.com/leannavarro/incendios")),
+  column(2,helpText("Aplicación desarrollada por Leandro Navarro y Elián Soutullo"))
+  ),
   
   tabsetPanel(
     tabPanel('Mapas',
@@ -91,6 +97,7 @@ ui <- fluidPage(
              )
     )
   )
+    
 )
 
 
@@ -273,6 +280,19 @@ server <- function(input,output){
     nrc_p 
   })
   
+  output$logoGithub <- renderImage({
+    width<- "100%"
+    height<- "100%"
+    list(src = "github.png",
+         contentType = "image/png",
+         width = width,
+         height = height,
+         deleteFile = F
+    )
+  },
+  deleteFile = FALSE)
+  output$text1 <- renderText({""
+    })
   
 }
 
