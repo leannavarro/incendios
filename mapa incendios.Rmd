@@ -19,29 +19,20 @@ options(scipen = 99)
 
 ```
 
+Vamos a elaborar unos mapas de Argentina mostrando la evolución de los incendios forestales en Argentina, tanto por superficie afectada como por cantidad, según provincia. Los datasets utilizados se encuentran en : https://datos.gob.ar/dataset/ambiente-incendios-forestales
 ```{r}
-#Cargamos y limpiamos el dataset de cantidad de incendios
+#Cargamos y limpiamos el dataset de cantidad de incendios descargado de la página
 
 cantidad <- read.csv("cantidad.csv", sep = ";")
 
 str(cantidad)
 
-cantidad <- cantidad %>%  #uno las columnas con gather para agrupar la data en tidy format
-  #gather(key = "incendio_x_tipo",
-   #      value = "cant_incendios_x_tipo",
-    #     c(4:7)) %>% 
+cantidad <- cantidad %>%  
    rename(anio = incendio_anio) %>% 
   rename(provincia = incendio_provincia) %>% 
   arrange(anio) %>% 
   drop_na()
   
-
-#cantidad <- cantidad %>% #renombro la variable
-  #rename(anio = incendio_anio) %>% 
- # rename(provincia = incendio_provincia)
-
-
-
 ```
 
 ```{r}
@@ -52,23 +43,15 @@ superficie <- read.csv("superficie.csv", sep = ";")
 
 str(superficie)
 
-#superficie <- superficie %>%  #uno las columnas con gather para agrupar la data en tidy format
- # gather(key = "superficie_afectada_tipo",
-  #       value = "superficie_afectada_ha",
-   #      c(4:8))
-
 superficie <- superficie %>% #renombro la variable
   rename(anio = superficie_afectada_por_incendios_anio) %>% 
   rename(provincia = superficie_afectada_por_incendios_provincia)
-
-
 
 ```
 
 
 ```{r}
-#Incorporamos dataset sobre tamaño de las provincias y  agregamos la columna al dataset de superficie afectada
-
+#Incorporamos un dataset sobre tamaño de las provincias y agregamos la columna al dataset de superficie afectada, para luego representar la dimensión de los incendios en función del tamaño de cada provincia.
 
 tamanio_arg <- read.csv("tamanio_provincias.csv", sep = ";", encoding = "UTF-8")
 
@@ -172,7 +155,5 @@ unique(argentina$provincia)
 unique(superficie$provincia)
 unique(cantidad$provincia)
 unique(tamanio_arg$provincia)
-
-```
 
 ```
