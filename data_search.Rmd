@@ -19,7 +19,7 @@ Conectamos con la API de Jornalia (https://jornalia.net/) para traer artículos 
 ```{r}
 apiKey <- "9181f8e92fb8454d9299a2c619803898"
 
-#se trae de a 50 registros, en el periodo del 01/09/2020 al 20/10/2020 de los principales medios nacionales y medios provinciales de Córdoba
+#Traemos de a 50 registros, en el periodo del 01/09/2020 al 20/10/2020 de los principales medios nacionales y medios provinciales de Córdoba, usando la palabra clave "incendios"
 
 path <- paste0("https://api.jornalia.net/api/v1/articles?apiKey=9181f8e92fb8454d9299a2c619803898&search=incendios&providers=Clarin%2CTN%2CPagina12%2CLaNacion%2CTelam%2CInfobae%2CLaVozCB%2CCadena3CB%2CLaTinta&categories=LOCALES%2CNACIONALES%2CSOCIEDAD%2CPOLITICA%2CECONOMIA&startDate=2020-09-01&endDate=2020-09-23")
 
@@ -52,7 +52,7 @@ response8 <- GET(url = path8)
 Armamos el dataframe
 
 ```{r}
-#vemos que trae la conuslta
+#Vemos que trae la conuslta
 str(content(response))
 str(content(response2))
 str(content(response3))
@@ -71,7 +71,7 @@ response6 <- content(response6, as = "text", encoding = "UTF-8")
 response7 <- content(response7, as = "text", encoding = "UTF-8")
 response8 <- content(response8, as = "text", encoding = "UTF-8")
 
-#lo transformo de JSON a dataframe
+#Lo transformamos de JSON a dataframe
 df <- fromJSON(response,flatten = TRUE)
 df2 <- fromJSON(response2,flatten = TRUE)
 df3 <- fromJSON(response3,flatten = TRUE)
@@ -125,10 +125,10 @@ data_medios$publishedAt <- as.Date(data_medios$publishedAt , format="%Y-%m-%d")
 
 ```
 
-Ahora vamos a sumar registros de medios locales y provinciales de Santa Fe y Córdoba que no se encontrbana en la API, para nutrir el análisis. Scrapeamos articulos sobre el mismo tema, para fechas similares.
+Ahora vamos a sumar registros de medios locales y provinciales de Santa Fe y Córdoba que no se encontraban en la API, para nutrir el análisis. Scrapeamos articulos sobre el mismo tema, para fechas similares.
 
 ```{r}
-#usamos la librería RSelenium que nos permite navegar por el sitio web y scrapear los datos
+#Usamos la librería RSelenium que nos permite navegar por el sitio web y scrapear los datos
 
 #Medio La Capital de Rosario
 url_origen <- "https://www.lacapital.com.ar/incendios-s.html/14"
@@ -146,14 +146,14 @@ remDr$open()
 
 while(contador < 12){ #traigo las 11 páginas que entran en el período establecido
   
-  title_click <- driver$client$findElements(using = "css", value = ".article-news-title") #busco los comentarios
+  title_click <- driver$client$findElements(using = "css", value = ".article-news-title")
   for(ele in 1:length(title_click)) {
     title_click[[ele]]$clickElement()
     
     Sys.sleep(2)
     
     titulo <- driver$client$findElement(using = "css", value = ".news-header-title")
-    title <- append(title, value =titulo$getElementText()) #guardo los comentarios
+    title <- append(title, value =titulo$getElementText()) 
     descripcion <- driver$client$findElement(using = "css", value = ".news-header-description")
     description <- append(description, value = descripcion$getElementText())
     fecha <- driver$client$findElement(using = "css", value = ".paragraph-date")
@@ -190,14 +190,14 @@ remDr$open()
 
 while(contador < 5){ #traigo las 4 páginas que entran en el período establecido
   
-  title_click <- driver$client$findElements(using = "css", value = ".article-news-title") #busco los comentarios
+  title_click <- driver$client$findElements(using = "css", value = ".article-news-title")
   for(ele in 1:length(title_click)) {
     title_click[[ele]]$clickElement()
     
     Sys.sleep(2)
     
     titulo <- driver$client$findElement(using = "css", value = ".news-header-title")
-    title1 <- append(title1, value =titulo$getElementText()) #guardo los comentarios
+    title1 <- append(title1, value =titulo$getElementText())
     descripcion <- driver$client$findElement(using = "css", value = ".news-header-description")
     description1 <- append(description1, value = descripcion$getElementText())
     fecha <- driver$client$findElement(using = "css", value = ".paragraph-date")
@@ -234,17 +234,16 @@ remDr$navigate(url_cba)
 remDr$open()
 
 
-
-while(contador < 3){ #traigo las 4 páginas que entran en el período establecido
+while(contador < 3){ #traigo las 3 páginas que entran en el período establecido
   
-  title_click <- driver$client$findElements(using = "css", value = ".result-title a") #busco los comentarios
+  title_click <- driver$client$findElements(using = "css", value = ".result-title a") 
   for(ele in 1:length(title_click)) {
     title_click[[ele]]$clickElement()
     
     Sys.sleep(4)
     
     titulo <- driver$client$findElement(using = "css", value = "h2")
-    title2 <- append(title2, value =titulo$getElementText()) #guardo los comentarios
+    title2 <- append(title2, value =titulo$getElementText())
     descripcion <- driver$client$findElement(using = "css", value = ".article-intro p")
     description2 <- append(description2, value = descripcion$getElementText())
     fecha <- driver$client$findElement(using = "css", value = "time")
@@ -326,6 +325,7 @@ data_cba$publishedAt <- as.Date(data_cba$publishedAt, format="%d de %B de %Y")
 #Unificamos los data frames
 data_medios <- rbind(data_medios, data_rosario, data_santafe, data_cba)
 
+
 #Cambiamos nombres a columnas
 data_medios <- rename(data_medios, date = publishedAt)
 data_medios <- rename(data_medios, name_medio = provider.name)
@@ -333,7 +333,8 @@ data_medios <- rename(data_medios, scope_medio = provider.scope)
 
 #una última limpieza
 
-data_medios <- filter(data_medios[-c(53, 134, 145, 190, 199,303,329,336,338,413,419,420,421,422,423,424,425), ])
+data_medios <- filter(data_medios[-c(18,53, 54, 134, 145, 190,
+                                     199,303,329,336,338,413,419,420,421,422,423,424,425), ])
 
 View(data_medios)
 
