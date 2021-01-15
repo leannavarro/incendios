@@ -21,13 +21,9 @@ options(scipen = 999)
 
 ui <- fluidPage(
   theme = shinytheme("cosmo"),
-  fluidRow(
-    column(9,titlePanel(title= h1('Análisis de incendios en Argentina'))),
-    br(),
-  column(1,tags$a(imageOutput("logoGithub", width = 50, height = 50),
-                   href="https://github.com/leannavarro/incendios")),
-  column(2,helpText("Aplicación desarrollada por Leandro Navarro y Elián Soutullo"))
-  ),
+  
+
+  titlePanel(title= h1('Análisis de incendios forestales en Argentina')),
   
   tabsetPanel(
     tabPanel('Mapas',
@@ -95,7 +91,27 @@ ui <- fluidPage(
                  br()
                )
              )
-    )
+    ),
+    
+    
+    tabPanel('Contacto',
+
+             fluidRow(column(3, offset = 1, helpText(h3("Leandro Navarro"))),
+                      column(3, helpText(h3("Elián Soutullo")))),
+             fluidRow(column(3, offset = 1, helpText("leandronavarro.ln@gmail.com")),
+                      column(3, helpText("eliansoutul@gmail.com"))),
+             fluidRow(column(3, offset = 1, tags$a(imageOutput("logoTwitter", width = 50, height = 50),
+                                       href="https://twitter.com/navarro_lean?lang=es")),
+                      column(3, tags$a(imageOutput("logoLinkedin", width = 50, height = 50),
+                                       href="https://www.linkedin.com/in/eli%C3%A1n-soutullo/"))),
+                      br(),
+            
+            fluidRow(column(3, offset = 1, helpText(h2("Repositorio Github:")),
+                     tags$a(imageOutput("logoGithub", width = 100, height = 100),
+                                    href="https://github.com/leannavarro/incendios"))
+             )
+            )
+    
   )
     
 )
@@ -293,6 +309,34 @@ server <- function(input,output){
   deleteFile = FALSE)
   output$text1 <- renderText({""
     })
+  
+  output$logoTwitter <- renderImage({
+    width<- "100%"
+    height<- "100%"
+    list(src = "twitter.png",
+         contentType = "image/png",
+         width = width,
+         height = height,
+         deleteFile = F
+    )
+  },
+  deleteFile = FALSE)
+  output$text1 <- renderText({""
+  })
+  
+  output$logoLinkedin <- renderImage({
+    width<- "100%"
+    height<- "100%"
+    list(src = "linkedin.png",
+         contentType = "image/png",
+         width = width,
+         height = height,
+         deleteFile = F
+    )
+  },
+  deleteFile = FALSE)
+  output$text1 <- renderText({""
+  })
   
 }
 
